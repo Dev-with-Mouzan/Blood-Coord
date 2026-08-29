@@ -1,0 +1,1 @@
+// fetch wrapper to FastAPI
