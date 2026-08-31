@@ -1,5 +1,3 @@
-# signup/login, phone verification
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -7,7 +5,8 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import create_access_token, verify_password
 from app.crud.donor import create_donor, get_donor_by_phone
-from app.schemas.donor import DonorOut, DonorSignup, Token
+from app.schemas.donor import DonorOut, DonorSignup
+from app.schemas.token import Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,7 +24,6 @@ def signup_donor(donor_in: DonorSignup, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # OAuth2PasswordRequestForm sends "username" — we treat that field as phone_number
     donor = get_donor_by_phone(db, form_data.username)
     if not donor or not verify_password(form_data.password, donor.hashed_password):
         raise HTTPException(
@@ -33,5 +31,5 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect phone number or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(data={"sub": donor.phone_number})
+    access_token = create_access_token(data={"sub": str(donor.public_id), "role": "donor"})
     return Token(access_token=access_token)
