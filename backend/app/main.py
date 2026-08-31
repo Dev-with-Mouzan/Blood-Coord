@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from app.api.v1.router import api_router
 from app.core.database import Base, engine
 from app.models import donor  # noqa: F401  (ensures model is registered before create_all)
+from app.models import requester
+from app.models import blood_request
 
 # For the prototype we create tables directly on startup.
 # Once Alembic migrations are set up (Phase 1 task), remove this and use
