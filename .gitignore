@@ -2,8 +2,10 @@
 venv
 
 .env
-_pycache__
+__pycache__
 *.pyc
 .DS_Store
 .dbbackend/bloodbank.db
 *.db
+
+tests/
