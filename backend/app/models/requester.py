@@ -29,4 +29,6 @@ class Requester(Base):
     hashed_password = Column(String, nullable=False)
     phone_verified = Column(Boolean, default=False)
 
-    blood_requests = relationship("BloodRequest", back_populates="requester")
+    blood_requests = relationship(
+        "BloodRequest", back_populates="requester", cascade="all, delete-orphan"
+    )
