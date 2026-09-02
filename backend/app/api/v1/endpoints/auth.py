@@ -8,7 +8,7 @@ from app.crud.donor import create_donor, get_donor_by_phone
 from app.schemas.donor import DonorOut, DonorSignup
 from app.schemas.token import Token
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["donor-auth"])
 
 
 @router.post("/signup", response_model=DonorOut, status_code=status.HTTP_201_CREATED)
