@@ -1,7 +1,7 @@
 # Pydantic schemas for BloodRequest
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,3 +32,7 @@ class BloodRequestOut(BaseModel):
     status: BloodRequestStatus
     created_at: datetime
     updated_at: datetime
+
+
+class BloodRequestStatusUpdate(BaseModel):
+    status: Literal["PENDING", "FULFILLED", "CLOSED"]

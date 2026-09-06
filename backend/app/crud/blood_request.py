@@ -48,3 +48,10 @@ def get_blood_request_by_public_id(db: Session, public_id: str | uuid.UUID) -> B
         return db.query(BloodRequest).filter(BloodRequest.public_id == uuid_val).first()
     except Exception:
         return None
+
+
+def update_request_status(db: Session, blood_request, new_status: str):
+    blood_request.status = new_status
+    db.commit()
+    db.refresh(blood_request)
+    return blood_request

@@ -51,3 +51,7 @@ def create_message(db: Session, thread_id: int, sender_role: str, content: str) 
 
 def get_messages_for_thread(db: Session, thread_id: int) -> list[Message]:
     return db.query(Message).filter(Message.thread_id == thread_id).order_by(Message.created_at).all()
+
+
+def get_threads_for_request(db: Session, blood_request_id: int):
+    return db.query(ChatThread).filter(ChatThread.blood_request_id == blood_request_id).all()
