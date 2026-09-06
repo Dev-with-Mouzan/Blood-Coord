@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ChatThreadCreate(BaseModel):
-    donor_public_id: str
+    donor_public_id: Optional[str] = None
     request_public_id: str
 
 

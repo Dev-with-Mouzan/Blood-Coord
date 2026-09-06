@@ -34,21 +34,31 @@ def create_thread(
     db: Session = Depends(get_db),
 ):
     role, user = auth
-    if role != "requester":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only requesters can start a chat")
-
-    donor = get_donor_by_public_id(db, payload.donor_public_id)
-    if donor is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor not found")
 
     blood_request = get_blood_request_by_public_id(db, payload.request_public_id)
     if blood_request is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Blood request not found")
 
-    if blood_request.requester_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your blood request")
+    if role == "requester":
+        if blood_request.requester_id != user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your blood request")
 
-    thread = get_or_create_thread(db, donor.id, user.id, blood_request.id)
+        if not payload.donor_public_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="donor_public_id required")
+
+        donor = get_donor_by_public_id(db, payload.donor_public_id)
+        if donor is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor not found")
+
+        thread = get_or_create_thread(db, donor.id, user.id, blood_request.id)
+
+    elif role == "donor":
+        # donor-initiated: they are the donor, requester comes from the blood_request itself
+        thread = get_or_create_thread(db, user.id, blood_request.requester_id, blood_request.id)
+
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid role")
+
     return thread
 
 

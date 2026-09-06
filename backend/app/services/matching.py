@@ -56,3 +56,33 @@ def find_matching_donors(db: Session, blood_request: BloodRequest) -> list[Donor
         donors.sort(key=location_score, reverse=True)
 
     return donors
+
+
+# Reverse of BLOOD_COMPATIBILITY: donor_group -> list of request blood_types this donor can supply
+DONOR_CAN_SUPPLY: dict[str, list[str]] = {}
+for _req_type, _donor_groups in BLOOD_COMPATIBILITY.items():
+    for _donor_group in _donor_groups:
+        DONOR_CAN_SUPPLY.setdefault(_donor_group, []).append(_req_type)
+
+
+def find_matching_requests_for_donor(db: Session, donor: Donor) -> list[BloodRequest]:
+    compatible_request_types = DONOR_CAN_SUPPLY.get(donor.blood_group, [])
+    if not compatible_request_types:
+        return []
+
+    query = db.query(BloodRequest).filter(
+        BloodRequest.blood_type.in_(compatible_request_types),
+        BloodRequest.status == "PENDING",
+    )
+    requests = query.all()
+
+    if donor.address:
+        donor_keywords = set(donor.address.lower().split())
+
+        def location_score(req) -> int:
+            req_keywords = set((req.address or "").lower().split())
+            return len(donor_keywords & req_keywords)
+
+        requests.sort(key=location_score, reverse=True)
+
+    return requests
