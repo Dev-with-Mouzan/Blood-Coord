@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.crud.blood_request import create_blood_request, get_blood_requests_by_requester
+from app.crud.blood_request import create_blood_request, get_blood_requests_by_requester, update_request_status
+from app.crud.chat import get_threads_for_request, create_message
 from app.dependencies import get_current_requester
 from app.models.requester import Requester
-from app.schemas.blood_request import BloodRequestCreate, BloodRequestOut
+from app.schemas.blood_request import BloodRequestCreate, BloodRequestOut, BloodRequestStatusUpdate
 
 from fastapi import HTTPException, status  
 
@@ -58,3 +59,38 @@ def get_matches_for_request(
 
     return find_matching_donors(db, blood_request)
 
+
+@router.patch("/{request_public_id}/status", response_model=BloodRequestOut)  # reuse existing BloodRequestOut schema
+def update_status(
+    request_public_id: str,
+    payload: BloodRequestStatusUpdate,
+    current_requester: Requester = Depends(get_current_requester),
+    db: Session = Depends(get_db),
+):
+    blood_request = db.query(BloodRequest).filter(
+        BloodRequest.public_id == request_public_id
+    ).first()
+
+    if blood_request is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+
+    if blood_request.requester_id != current_requester.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this request",
+        )
+
+    updated = update_request_status(db, blood_request, payload.status)
+
+    # Auto-broadcast closure/fulfillment to every chat thread tied to this request
+    if payload.status in ("FULFILLED", "CLOSED"):
+        threads = get_threads_for_request(db, blood_request.id)
+        broadcast_text = (
+            "This blood request has been fulfilled. Thank you for your help!"
+            if payload.status == "FULFILLED"
+            else "This blood request has been closed."
+        )
+        for thread in threads:
+            create_message(db, thread.id, "system", broadcast_text)
+
+    return updated
