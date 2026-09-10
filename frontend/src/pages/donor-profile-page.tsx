@@ -1,7 +1,7 @@
 import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { DonorNavbar } from "@/components/ui/donor-navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DonorProfile } from "@/types";
 
 export default function DonorProfilePage() {
@@ -17,6 +17,20 @@ export default function DonorProfilePage() {
     health_status: donor?.health_status || "",
     available_to_donate: donor?.available_to_donate || false,
   });
+
+  useEffect(() => {
+    if (donor) {
+      setFormData({
+        name: donor.name,
+        age: donor.age,
+        gender: donor.gender,
+        address: donor.address,
+        weight: donor.weight || 0,
+        health_status: donor.health_status || "",
+        available_to_donate: donor.available_to_donate,
+      });
+    }
+  }, [donor]);
 
   const [saved, setSaved] = useState(false);
 
