@@ -83,3 +83,13 @@ export interface TokenResponse {
 export interface ApiError {
   detail?: string;
 }
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: string;
+  blood_request_id?: number | null;
+  is_read: boolean;
+  created_at: string;
+}

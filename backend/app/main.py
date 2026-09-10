@@ -10,6 +10,7 @@ from app.models import donor  # noqa: F401  (ensures model is registered before 
 from app.models import requester
 from app.models import blood_request
 from app.models import chat
+from app.models import notification
 
 # For the prototype we create tables directly on startup.
 # Once Alembic migrations are set up (Phase 1 task), remove this and use

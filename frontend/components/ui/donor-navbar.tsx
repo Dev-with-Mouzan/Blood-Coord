@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/auth-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Drop, List, X } from "@phosphor-icons/react";
+import { Drop, List, X, Bell } from "@phosphor-icons/react";
+import { getToken } from "@/lib/auth-client";
 
 const navLinks = [
   { label: "Dashboard", href: "/dashboard/donor" },
@@ -17,8 +18,20 @@ export function DonorNavbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const donor = user && "blood_group" in user ? user : null;
+
+  useEffect(() => {
+    const token = getToken("donor");
+    if (!token) return;
+    fetch("/api/v1/donors/me/notifications/unread-count", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setUnreadCount(data.count ?? 0))
+      .catch(() => {});
+  }, [pathname]);
 
   function handleLogout() {
     logout();
@@ -63,6 +76,19 @@ export function DonorNavbar() {
               {donor.blood_group}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/donor")}
+            className="relative rounded-full p-2 text-bone-200 transition-colors hover:bg-bone-50/10 hover:text-bone-50"
+            aria-label="Notifications"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blood-500 px-1 text-[10px] font-bold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleLogout}
@@ -118,6 +144,19 @@ export function DonorNavbar() {
                     {donor.blood_group}
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => { navigate("/dashboard/donor"); setOpen(false); }}
+                  className="flex items-center justify-center gap-2 rounded-full border border-bone-50/20 px-4 py-3 text-sm font-semibold text-bone-50"
+                >
+                  <Bell size={16} />
+                  Notifications
+                  {unreadCount > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blood-500 px-1.5 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => { handleLogout(); setOpen(false); }}

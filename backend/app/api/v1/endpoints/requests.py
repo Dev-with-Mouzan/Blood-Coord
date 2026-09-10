@@ -8,6 +8,8 @@ from app.crud.blood_request import create_blood_request, get_blood_requests_by_r
 from app.crud.chat import get_threads_for_request, create_message
 from app.dependencies import get_current_requester
 from app.models.requester import Requester
+from app.models.donor import Donor
+from app.models.notification import Notification
 from app.schemas.blood_request import BloodRequestCreate, BloodRequestOut, BloodRequestStatusUpdate
 
 from fastapi import HTTPException, status  
@@ -27,6 +29,21 @@ def submit_blood_request(
     db: Session = Depends(get_db),
     ):
     blood_request = create_blood_request(db, request_in, current_requester.id)
+
+    # Notify matching donors
+    matching_donors = find_matching_donors(db, blood_request)
+    urgency_label = " urgently" if request_in.urgency in ("CRITICAL", "URGENT") else ""
+    for donor in matching_donors:
+        notif = Notification(
+            donor_id=donor.id,
+            title=f"New blood request{urgency_label}",
+            message=f"{blood_request.hospital} needs {blood_request.units_needed} unit(s) of {blood_request.blood_type} blood",
+            type="request",
+            blood_request_id=blood_request.id,
+        )
+        db.add(notif)
+    db.commit()
+
     return blood_request
 
 

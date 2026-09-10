@@ -1,10 +1,12 @@
 # donor CRUD/profile
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_current_donor
 from app.models.donor import Donor
+from app.models.notification import Notification
 from app.schemas.donor import DonorOut
+from app.schemas.notification import NotificationOut
 
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -35,6 +37,63 @@ def update_my_profile(
     db.commit()
     db.refresh(current_donor)
     return current_donor
+
+
+@router.get("/me/notifications", response_model=list[NotificationOut])
+def get_my_notifications(
+    current_donor: Donor = Depends(get_current_donor),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(Notification)
+        .filter(Notification.donor_id == current_donor.id)
+        .order_by(Notification.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+
+@router.get("/me/notifications/unread-count")
+def get_unread_count(
+    current_donor: Donor = Depends(get_current_donor),
+    db: Session = Depends(get_db),
+):
+    count = (
+        db.query(Notification)
+        .filter(Notification.donor_id == current_donor.id, Notification.is_read == False)
+        .count()
+    )
+    return {"count": count}
+
+
+@router.patch("/me/notifications/{notification_id}/read")
+def mark_notification_read(
+    notification_id: int,
+    current_donor: Donor = Depends(get_current_donor),
+    db: Session = Depends(get_db),
+):
+    notif = (
+        db.query(Notification)
+        .filter(Notification.id == notification_id, Notification.donor_id == current_donor.id)
+        .first()
+    )
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    notif.is_read = True
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/me/notifications/read-all")
+def mark_all_read(
+    current_donor: Donor = Depends(get_current_donor),
+    db: Session = Depends(get_db),
+):
+    db.query(Notification).filter(
+        Notification.donor_id == current_donor.id, Notification.is_read == False
+    ).update({"is_read": True})
+    db.commit()
+    return {"ok": True}
 
 
 @router.get("/me/matching-requests", response_model=list[BloodRequestOut])

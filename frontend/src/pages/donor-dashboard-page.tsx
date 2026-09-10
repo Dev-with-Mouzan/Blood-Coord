@@ -1,8 +1,10 @@
 import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { DonorNavbar } from "@/components/ui/donor-navbar";
-import type { DonorProfile } from "@/types";
+import type { DonorProfile, Notification } from "@/types";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getToken } from "@/lib/auth-client";
 import {
   Drop,
   UserCircle,
@@ -11,35 +13,7 @@ import {
   ArrowRight,
   Clock,
   CheckCircle,
-  Plus,
 } from "@phosphor-icons/react";
-
-const MOCK_ACTIVITY = [
-  {
-    id: "act-001",
-    type: "request" as const,
-    title: "New blood request nearby",
-    description: "City General Hospital needs 2 units of O+ blood",
-    time: "2 hours ago",
-    href: "/dashboard/donor/requests",
-  },
-  {
-    id: "act-002",
-    type: "donation" as const,
-    title: "Donation confirmed",
-    description: "Your donation at St. Mary Medical Center is confirmed for Oct 15",
-    time: "1 day ago",
-    href: "/dashboard/donor/history",
-  },
-  {
-    id: "act-003",
-    type: "profile" as const,
-    title: "Profile updated",
-    description: "Your availability status was changed to Available",
-    time: "3 days ago",
-    href: "/dashboard/donor/profile",
-  },
-];
 
 const MOCK_HISTORY = [
   {
@@ -65,7 +39,7 @@ const MOCK_HISTORY = [
   },
 ];
 
-const activityConfig = {
+const activityConfig: Record<string, { color: string; icon: string }> = {
   request: { color: "bg-blue-50 text-blue-600", icon: "R" },
   donation: { color: "bg-emerald-50 text-emerald-600", icon: "D" },
   profile: { color: "bg-amber-50 text-amber-600", icon: "P" },
@@ -95,6 +69,18 @@ const quickActions = [
 export default function DonorDashboardPage() {
   const { user } = useAuth();
   const donor = user && "blood_group" in user ? (user as DonorProfile) : null;
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    const token = getToken("donor");
+    if (!token) return;
+    fetch("/api/v1/donors/me/notifications", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setNotifications(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
   return (
     <AuthGate>
@@ -228,13 +214,18 @@ export default function DonorDashboardPage() {
                     </h2>
                   </div>
                   <div className="divide-y divide-ink-900/5">
-                    {MOCK_ACTIVITY.map((item) => {
-                      const cfg = activityConfig[item.type];
+                    {notifications.length === 0 && (
+                      <p className="px-6 py-8 text-sm text-ink-400 text-center">
+                        No notifications yet
+                      </p>
+                    )}
+                    {notifications.map((item) => {
+                      const cfg = activityConfig[item.type] || activityConfig.request;
+                      const timeAgo = getTimeAgo(item.created_at);
                       return (
-                        <Link
+                        <div
                           key={item.id}
-                          to={item.href}
-                          className="flex items-start gap-4 px-6 py-4 transition-colors hover:bg-ink-900/5"
+                          className={`flex items-start gap-4 px-6 py-4 transition-colors hover:bg-ink-900/5 ${!item.is_read ? "bg-blood-50/30" : ""}`}
                         >
                           <span
                             className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${cfg.color}`}
@@ -244,14 +235,16 @@ export default function DonorDashboardPage() {
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold text-ink-900">{item.title}</p>
                             <p className="mt-0.5 text-sm text-ink-500 line-clamp-2">
-                              {item.description}
+                              {item.message}
                             </p>
                             <span className="mt-1.5 inline-block text-xs text-ink-400">
-                              {item.time}
+                              {timeAgo}
                             </span>
                           </div>
-                          <ArrowRight size={14} className="mt-1 shrink-0 text-ink-300" />
-                        </Link>
+                          {!item.is_read && (
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blood-500" />
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -335,4 +328,18 @@ function StatCard({
       </div>
     </div>
   );
+}
+
+function getTimeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
 }
