@@ -2,6 +2,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { DonorNavbar } from "@/components/ui/donor-navbar";
 import { useEffect, useState } from "react";
+import { getToken } from "@/lib/auth-client";
 import type { DonorProfile } from "@/types";
 
 export default function DonorProfilePage() {
@@ -33,6 +34,7 @@ export default function DonorProfilePage() {
   }, [donor]);
 
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value, type } = e.target;
@@ -43,12 +45,33 @@ export default function DonorProfilePage() {
     setSaved(false);
   }
 
-  function handleToggleAvailable() {
-    setFormData((prev) => ({ ...prev, available_to_donate: !prev.available_to_donate }));
+  async function handleToggleAvailable() {
+    const newValue = !formData.available_to_donate;
+    setFormData((prev) => ({ ...prev, available_to_donate: newValue }));
     setSaved(false);
+    const token = getToken("donor");
+    if (token) {
+      await fetch("/api/v1/donors/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ available_to_donate: newValue }),
+      });
+      await refresh();
+    }
   }
 
-  function handleSave() {
+  async function handleSave() {
+    setSaving(true);
+    const token = getToken("donor");
+    if (token) {
+      await fetch("/api/v1/donors/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(formData),
+      });
+      await refresh();
+    }
+    setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

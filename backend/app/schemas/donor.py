@@ -1,17 +1,15 @@
 # Pydantic schemas for Donor
 
-from datetime import date, timedelta
+from datetime import date
 from typing import Optional
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import PHONE_REGEX, normalize_phone
 from app.schemas.enums import BloodGroup
 from app.schemas.token import Token
-
-DONATION_COOLDOWN_DAYS = 120
 
 
 class DonorSignup(BaseModel):
@@ -50,13 +48,6 @@ class DonorOut(BaseModel):
     health_status: Optional[str] = None
     last_donation_date: Optional[date] = None
     eligible_status: bool
+    available_to_donate: bool
     # NOTE: phone_number is deliberately excluded from DonorOut —
     # never expose it through general read endpoints.
-
-    @computed_field
-    @property
-    def available_to_donate(self) -> bool:
-        if self.last_donation_date is None:
-            return True
-        cooldown_cutoff = date.today() - timedelta(days=DONATION_COOLDOWN_DAYS)
-        return self.last_donation_date <= cooldown_cutoff

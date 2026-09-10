@@ -19,6 +19,24 @@ def read_my_profile(current_donor: Donor = Depends(get_current_donor)):
     return current_donor
 
 
+@router.patch("/me", response_model=DonorOut)
+def update_my_profile(
+    payload: dict,
+    current_donor: Donor = Depends(get_current_donor),
+    db: Session = Depends(get_db),
+):
+    allowed_fields = {
+        "name", "age", "gender", "address", "weight",
+        "health_status", "available_to_donate",
+    }
+    for key, value in payload.items():
+        if key in allowed_fields:
+            setattr(current_donor, key, value)
+    db.commit()
+    db.refresh(current_donor)
+    return current_donor
+
+
 @router.get("/me/matching-requests", response_model=list[BloodRequestOut])
 def get_my_matching_requests(
     current_donor: Donor = Depends(get_current_donor),
