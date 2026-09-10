@@ -22,12 +22,12 @@ export function Field({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-ink-800">
+      <label htmlFor={htmlFor} className="text-left text-sm font-medium text-ink-800">
         {label}
       </label>
       {children}
       {hint ? <p className="text-xs text-ink-500">{hint}</p> : null}
-      {error ? <p className="text-sm text-blood-600">{error}</p> : null}
+      {error ? <p className="text-left text-sm text-blood-600">{error}</p> : null}
     </div>
   );
 }

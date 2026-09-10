@@ -2,9 +2,9 @@
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-PHONE_REGEX = r"^\+?[1-9]\d{7,14}$"
+from app.core.phone import PHONE_REGEX, normalize_phone
 
 
 class RequesterSignup(BaseModel):
@@ -15,8 +15,13 @@ class RequesterSignup(BaseModel):
 
 
 class RequesterLogin(BaseModel):
-    phone_number: str = Field(..., pattern=PHONE_REGEX)
+    phone_number: str
     password: str = Field(..., min_length=1)
+
+    @field_validator("phone_number")
+    @classmethod
+    def _normalize_phone(cls, v: str) -> str:
+        return normalize_phone(v)
 
 
 class RequesterOut(BaseModel):

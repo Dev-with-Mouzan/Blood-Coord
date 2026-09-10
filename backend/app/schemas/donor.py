@@ -5,12 +5,11 @@ from typing import Optional
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
+from app.core.phone import PHONE_REGEX, normalize_phone
 from app.schemas.enums import BloodGroup
 from app.schemas.token import Token
-
-PHONE_REGEX = r"^\+?[1-9]\d{7,14}$"
 
 DONATION_COOLDOWN_DAYS = 120
 
@@ -29,8 +28,13 @@ class DonorSignup(BaseModel):
 
 
 class DonorLogin(BaseModel):
-    phone_number: str = Field(..., pattern=PHONE_REGEX)
+    phone_number: str
     password: str = Field(..., min_length=1)
+
+    @field_validator("phone_number")
+    @classmethod
+    def _normalize_phone(cls, v: str) -> str:
+        return normalize_phone(v)
 
 
 class DonorOut(BaseModel):

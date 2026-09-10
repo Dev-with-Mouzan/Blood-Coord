@@ -25,7 +25,7 @@ export function AuthShell({
             Back to home
           </Link>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center gap-2.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blood-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
               <Drop size={22} weight="fill" />
             </span>
@@ -34,7 +34,7 @@ export function AuthShell({
             </span>
           </div>
 
-          <div className="mt-8 rounded-[1.5rem] border border-ink-900/10 bg-bone-50 p-8 shadow-[0_24px_50px_-30px_rgba(26,20,16,0.35)]">
+          <div className="mt-8 rounded-[1.5rem] border border-ink-900/10 bg-bone-50 p-8 text-center shadow-[0_24px_50px_-30px_rgba(26,20,16,0.35)]">
             {eyebrow ? (
               <span className="inline-flex items-center gap-2 rounded-full border border-blood-200 bg-blood-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blood-700">
                 {eyebrow}

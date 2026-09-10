@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.phone import normalize_phone, phone_variants
 from app.core.security import create_access_token, verify_password
 from app.crud.requester import create_requester, get_requester_by_phone
 from app.schemas.requester import RequesterOut, RequesterSignup
@@ -24,7 +25,14 @@ def signup_requester(requester_in: RequesterSignup, db: Session = Depends(get_db
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    requester = get_requester_by_phone(db, form_data.username)
+    # Try the canonical +92 form first, then legacy stored formats (0300..., 300...).
+    requester = None
+    for candidate in phone_variants(form_data.username):
+        requester = get_requester_by_phone(db, candidate)
+        if requester:
+            break
+    if requester is None:
+        requester = get_requester_by_phone(db, normalize_phone(form_data.username))
     if not requester or not verify_password(form_data.password, requester.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

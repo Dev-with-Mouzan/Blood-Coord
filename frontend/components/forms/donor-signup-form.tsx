@@ -125,7 +125,7 @@ export function DonorSignupForm() {
       <PasswordStrength password={password} />
 
       <details className="text-sm text-ink-600">
-        <summary className="cursor-pointer font-medium text-ink-700">Optional medical details</summary>
+        <summary className="cursor-pointer text-left font-medium text-ink-700">Optional medical details</summary>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Weight (kg)" htmlFor="weight">
             <TextInput id="weight" name="weight" type="number" min={30} max={300} placeholder="65" />

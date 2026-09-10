@@ -10,7 +10,18 @@ connect_args = (
     {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
 )
 
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
+# Remote Postgres providers (e.g. Neon) close idle SSL connections server-side,
+# which surfaces as "SSL connection has been closed unexpectedly" when a stale
+# pooled connection is reused. pool_pre_ping validates each checkout and
+# transparently reconnects; pool_recycle bounds connection age as a backstop.
+engine = create_engine(
+    settings.DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=True,
+    pool_recycle=280,
+    pool_size=5,
+    max_overflow=5,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
