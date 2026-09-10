@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { DonorProfile } from "@/types";
 
 export default function DonorProfilePage() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const donor = user && "blood_group" in user ? (user as DonorProfile) : null;
 
   const [formData, setFormData] = useState({
@@ -26,6 +26,11 @@ export default function DonorProfilePage() {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : type === "number" ? Number(value) : value,
     }));
+    setSaved(false);
+  }
+
+  function handleToggleAvailable() {
+    setFormData((prev) => ({ ...prev, available_to_donate: !prev.available_to_donate }));
     setSaved(false);
   }
 
@@ -77,9 +82,9 @@ export default function DonorProfilePage() {
                       <div className="flex items-center justify-between rounded-xl bg-bone-100 px-4 py-3">
                         <span className="text-sm font-medium text-ink-600">Available</span>
                         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          donor.available_to_donate ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-500"
+                          formData.available_to_donate ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-500"
                         }`}>
-                          {donor.available_to_donate ? "Yes" : "No"}
+                          {formData.available_to_donate ? "Yes" : "No"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between rounded-xl bg-bone-100 px-4 py-3">
@@ -182,16 +187,21 @@ export default function DonorProfilePage() {
 
                     <div className="flex items-center justify-between rounded-xl bg-bone-100 px-4 py-3">
                       <span className="text-sm font-medium text-ink-600">Available to donate</span>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          name="available_to_donate"
-                          checked={formData.available_to_donate}
-                          onChange={handleChange}
-                          className="peer sr-only"
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={formData.available_to_donate}
+                        onClick={handleToggleAvailable}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                          formData.available_to_donate ? "bg-blood-600" : "bg-ink-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                            formData.available_to_donate ? "translate-x-5" : "translate-x-0.5"
+                          }`}
                         />
-                        <div className="h-6 w-11 rounded-full bg-ink-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blood-600 peer-checked:after:translate-x-full" />
-                      </label>
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-3">
