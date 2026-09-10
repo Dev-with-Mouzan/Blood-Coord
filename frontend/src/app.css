@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans-family);
+  --font-display: var(--font-sans-family);
+  --font-mono: var(--font-mono-family);
+
+  --color-ink-950: #1a1410;
+  --color-ink-900: #221a15;
+  --color-ink-800: #2e241d;
+  --color-ink-700: #40342b;
+  --color-ink-600: #5c4d42;
+  --color-ink-500: #7a6a5d;
+  --color-ink-400: #9a8b7e;
+  --color-ink-300: #bfb3a7;
+
+  --color-bone-50: #fbf9f6;
+  --color-bone-100: #f6f2ec;
+  --color-bone-200: #ece5da;
+  --color-bone-300: #ddd2c2;
+
+  --color-blood-700: #8c1f1f;
+  --color-blood-600: #a32a2a;
+  --color-blood-500: #c0392b;
+  --color-blood-400: #d15b4b;
+  --color-blood-100: #f7e3dd;
+  --color-blood-50: #fcf1ed;
+
+  --radius-card: 1.25rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-bone-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: var(--color-blood-100);
+    color: var(--color-ink-950);
+  }
+}
+
+@layer utilities {
+  .container-shell {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .grid-dots {
+    background-image: radial-gradient(
+      var(--color-ink-300) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [style*="opacity:0"],
+  [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
