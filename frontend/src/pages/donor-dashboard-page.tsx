@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 import { getToken } from "@/lib/auth-client";
 import {
   Drop,
-  UserCircle,
   MagnifyingGlass,
   ChatCircleDots,
   ArrowRight,
@@ -47,10 +46,10 @@ const activityConfig: Record<string, { color: string; icon: string }> = {
 
 const quickActions = [
   {
-    to: "/dashboard/donor/profile",
-    icon: UserCircle,
-    label: "My Profile",
-    description: "View and edit your details",
+    to: "/dashboard/donor/chats",
+    icon: ChatCircleDots,
+    label: "Messages",
+    description: "Chat with requesters",
   },
   {
     to: "/search",

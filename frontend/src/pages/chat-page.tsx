@@ -83,7 +83,7 @@ export default function ChatPage() {
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!newMessage.trim() || sending) return;
+    if (!newMessage.trim() || sending || !threadId) return;
 
     const token = getToken(role ?? "donor");
     if (!token) return;
@@ -95,11 +95,13 @@ export default function ChatPage() {
         { content: newMessage.trim() },
         token
       );
-      setMessages((prev) => [...prev, msg]);
-      setNewMessage("");
-      inputRef.current?.focus();
-    } catch {
-      // handle silently
+      if (msg) {
+        setMessages((prev) => [...prev, msg]);
+        setNewMessage("");
+        inputRef.current?.focus();
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
     } finally {
       setSending(false);
     }
@@ -116,19 +118,17 @@ export default function ChatPage() {
     <AuthGate>
       <div className="flex h-[100dvh] flex-col bg-bone-100">
         {/* Background image */}
-        <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]">
-          <svg width="100%" height="100%">
-            <defs>
-              <pattern id="blood-pattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-                <circle cx="40" cy="40" r="3" fill="#8B0000" />
-                <circle cx="10" cy="10" r="2" fill="#8B0000" />
-                <circle cx="70" cy="70" r="2" fill="#8B0000" />
-                <circle cx="20" cy="60" r="1.5" fill="#8B0000" />
-                <circle cx="60" cy="20" r="1.5" fill="#8B0000" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#blood-pattern)" />
-          </svg>
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          {/* Main blood drop pattern - flipped upward */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 105C53 105 46 94 46 78C46 58 60 40 60 40C60 40 74 58 74 78C74 94 67 105 60 105Z' fill='%238B0000' opacity='0.9'/%3E%3Ccircle cx='15' cy='25' r='5' fill='%238B0000' opacity='0.4'/%3E%3Ccircle cx='105' cy='95' r='4' fill='%238B0000' opacity='0.35'/%3E%3Ccircle cx='20' cy='85' r='2.5' fill='%238B0000' opacity='0.25'/%3E%3Ccircle cx='100' cy='35' r='3' fill='%238B0000' opacity='0.3'/%3E%3Ccircle cx='60' cy='15' r='2' fill='%238B0000' opacity='0.2'/%3E%3Ccircle cx='35' cy='55' r='1.5' fill='%238B0000' opacity='0.2'/%3E%3Ccircle cx='85' cy='65' r='1.5' fill='%238B0000' opacity='0.2'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "repeat",
+            }}
+          />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-bone-100/50 via-transparent to-bone-100/50" />
         </div>
 
         {/* Header */}
@@ -238,7 +238,11 @@ export default function ChatPage() {
                     disabled={sending || !newMessage.trim()}
                     className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blood-600 text-white shadow-lg shadow-blood-600/20 transition-all hover:bg-blood-500 hover:shadow-blood-600/30 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <PaperPlaneRight size={20} weight="fill" />
+                    {sending ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    ) : (
+                      <PaperPlaneRight size={20} weight="fill" />
+                    )}
                   </button>
                 </form>
               </div>

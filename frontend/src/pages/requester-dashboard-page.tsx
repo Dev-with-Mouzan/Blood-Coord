@@ -5,7 +5,7 @@ import { RequesterNavbar } from "@/components/ui/requester-navbar";
 import { requestsApi } from "@/lib/requests";
 import type { BloodRequest, RequesterProfile } from "@/types";
 import {
-  UserCircle,
+  ChatCircleDots,
   Plus,
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
@@ -63,15 +63,15 @@ export default function RequesterDashboardPage() {
                     </div>
                   </Link>
                   <Link
-                    to="/dashboard/requester/profile"
+                    to="/dashboard/requester/chats"
                     className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-900/10 bg-bone-50 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
-                      <UserCircle size={24} weight="duotone" />
+                      <ChatCircleDots size={24} weight="duotone" />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-ink-950">My Profile</p>
-                      <p className="mt-1 text-xs text-ink-500">Update your information</p>
+                      <p className="text-sm font-semibold text-ink-950">Messages</p>
+                      <p className="mt-1 text-xs text-ink-500">Chat with donors</p>
                     </div>
                   </Link>
                 </div>

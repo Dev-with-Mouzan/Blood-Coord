@@ -18,7 +18,8 @@ from app.crud.requester import get_requester_by_public_id
 from app.dependencies import get_current_donor_or_requester
 from app.models.donor import Donor
 from app.models.requester import Requester
-from app.models.chat import Message
+from app.models.chat import Message, ChatThread
+from app.models.notification import Notification
 from app.schemas.chat import ChatThreadCreate, ChatThreadOut, MessageCreate, MessageOut
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -30,6 +31,34 @@ def _check_participant(thread, role, user):
     if role == "requester" and thread.requester_id == user.id:
         return
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant in this thread")
+
+
+def _create_message_notification(db: Session, thread: ChatThread, sender_role: str, content: str):
+    """Create a notification for the recipient when a message is sent."""
+    if sender_role == "donor":
+        # Notify requester
+        requester = db.query(Requester).filter(Requester.id == thread.requester_id).first()
+        donor = db.query(Donor).filter(Donor.id == thread.donor_id).first()
+        notif = Notification(
+            requester_id=thread.requester_id,
+            title=f"New message from {donor.name if donor else 'Donor'}",
+            message=content[:100],
+            type="chat_message",
+            blood_request_id=thread.blood_request_id,
+        )
+    else:
+        # Notify donor
+        donor = db.query(Donor).filter(Donor.id == thread.donor_id).first()
+        requester = db.query(Requester).filter(Requester.id == thread.requester_id).first()
+        notif = Notification(
+            donor_id=thread.donor_id,
+            title=f"New message from {requester.name if requester else 'Requester'}",
+            message=content[:100],
+            type="chat_message",
+            blood_request_id=thread.blood_request_id,
+        )
+    db.add(notif)
+    db.commit()
 
 
 @router.post("/threads", response_model=ChatThreadOut, status_code=status.HTTP_201_CREATED)
@@ -80,13 +109,17 @@ def list_threads(
         for thread in threads:
             requester = db.query(Requester).filter(Requester.id == thread.requester_id).first()
             last_msg = db.query(Message).filter(Message.thread_id == thread.id).order_by(Message.created_at.desc()).first()
+            unread_count = db.query(Message).filter(
+                Message.thread_id == thread.id,
+                Message.sender_role == "requester",
+            ).count()
             result.append({
                 "public_id": str(thread.public_id),
                 "donor_name": requester.name if requester else "Unknown",
                 "donor_blood_group": "",
                 "last_message": last_msg.content if last_msg else "",
                 "last_message_time": last_msg.created_at.isoformat() if last_msg else "",
-                "unread_count": 0,
+                "unread_count": unread_count,
             })
         return result
 
@@ -96,13 +129,17 @@ def list_threads(
         for thread in threads:
             donor = db.query(Donor).filter(Donor.id == thread.donor_id).first()
             last_msg = db.query(Message).filter(Message.thread_id == thread.id).order_by(Message.created_at.desc()).first()
+            unread_count = db.query(Message).filter(
+                Message.thread_id == thread.id,
+                Message.sender_role == "donor",
+            ).count()
             result.append({
                 "public_id": str(thread.public_id),
                 "donor_name": donor.name if donor else "Unknown",
                 "donor_blood_group": donor.blood_group if donor else "",
                 "last_message": last_msg.content if last_msg else "",
                 "last_message_time": last_msg.created_at.isoformat() if last_msg else "",
-                "unread_count": 0,
+                "unread_count": unread_count,
             })
         return result
 
@@ -124,6 +161,13 @@ def send_message(
     _check_participant(thread, role, user)
 
     message = create_message(db, thread.id, role, payload.content)
+
+    # Create notification for the recipient (non-blocking)
+    try:
+        _create_message_notification(db, thread, role, payload.content)
+    except Exception:
+        pass
+
     return message
 
 

@@ -3,13 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/auth-context";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Drop, List, X, Bell } from "@phosphor-icons/react";
+import { Drop, List, X, Bell, UserCircle } from "@phosphor-icons/react";
 import { getToken } from "@/lib/auth-client";
 import type { Notification } from "@/types";
 
 const navLinks = [
   { label: "Dashboard", href: "/dashboard/donor" },
-  { label: "My Profile", href: "/dashboard/donor/profile" },
   { label: "Blood Requests", href: "/dashboard/donor/requests" },
   { label: "Donation History", href: "/dashboard/donor/history" },
   { label: "Messages", href: "/dashboard/donor/chats" },
@@ -199,10 +198,11 @@ export function DonorNavbar() {
           </div>
           <button
             type="button"
-            onClick={handleLogout}
-            className="rounded-full border border-bone-50/20 px-4 py-2 text-sm font-semibold text-bone-200 transition-colors hover:border-bone-50/40 hover:text-bone-50"
+            onClick={() => navigate("/dashboard/donor/profile")}
+            className="rounded-full p-2 text-bone-200 transition-colors hover:bg-bone-50/10 hover:text-bone-50"
+            aria-label="Profile"
           >
-            Sign out
+            <UserCircle size={24} weight="duotone" />
           </button>
         </div>
 
@@ -248,16 +248,11 @@ export function DonorNavbar() {
               <div className="mt-3 flex flex-col gap-2 border-t border-bone-50/10 pt-4">
                 <button
                   type="button"
-                  onClick={() => { navigate("/dashboard/donor"); setOpen(false); }}
+                  onClick={() => { navigate("/dashboard/donor/profile"); setOpen(false); }}
                   className="flex items-center justify-center gap-2 rounded-full border border-bone-50/20 px-4 py-3 text-sm font-semibold text-bone-50"
                 >
-                  <Bell size={16} />
-                  Notifications
-                  {unreadCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blood-500 px-1.5 text-[10px] font-bold text-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
+                  <UserCircle size={16} weight="duotone" />
+                  Profile
                 </button>
                 <button
                   type="button"

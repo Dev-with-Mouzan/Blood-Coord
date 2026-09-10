@@ -10,7 +10,8 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    donor_id = Column(Integer, ForeignKey("donors.id"), nullable=False, index=True)
+    donor_id = Column(Integer, ForeignKey("donors.id"), nullable=True, index=True)
+    requester_id = Column(Integer, ForeignKey("requesters.id"), nullable=True, index=True)
     title = Column(String(200), nullable=False)
     message = Column(Text, nullable=False)
     type = Column(String(50), nullable=False, default="request")
@@ -19,3 +20,4 @@ class Notification(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     donor = relationship("Donor", backref="notifications")
+    requester = relationship("Requester", backref="notifications")
