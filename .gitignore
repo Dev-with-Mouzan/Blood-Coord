@@ -2,6 +2,7 @@
 venv
 
 .env
+.env.local
 __pycache__
 *.pyc
 .DS_Store
@@ -9,3 +10,9 @@ __pycache__
 *.db
 
 tests/
+
+# Frontend
+node_modules/
+.next/
+dist/
+*.tsbuildinfo
