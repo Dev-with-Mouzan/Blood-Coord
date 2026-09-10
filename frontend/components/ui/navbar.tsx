@@ -97,7 +97,7 @@ export function Navbar() {
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-bone-50/10 text-bone-50"
@@ -112,13 +112,13 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link
-            href="/login"
+            to="/login"
             className="rounded-full px-4 py-2 text-sm font-semibold text-bone-200 transition-colors hover:text-bone-50"
           >
             Sign in
           </Link>
           <Link
-            href="/signup-donor"
+            to="/signup-donor"
             className="rounded-full bg-blood-600 px-4 py-2 text-sm font-semibold text-bone-50 transition-colors hover:bg-blood-500 active:translate-y-[1px]"
           >
             Become a donor

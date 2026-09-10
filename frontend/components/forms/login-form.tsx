@@ -10,7 +10,7 @@ type Role = "donor" | "requester";
 
 function LoginFormInner() {
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const initialRole: Role = searchParams.get("role") === "requester" ? "requester" : "donor";
