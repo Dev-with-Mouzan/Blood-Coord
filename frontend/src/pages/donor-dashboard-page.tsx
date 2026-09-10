@@ -154,18 +154,38 @@ export default function DonorDashboardPage() {
                   value={donor.blood_group}
                   icon={<Drop size={18} weight="fill" className="text-blood-600" />}
                 />
-                <StatCard
-                  label="Eligibility"
-                  value={donor.eligible_status ? "Eligible" : "Not Eligible"}
-                  valueColor={donor.eligible_status ? "text-emerald-600" : "text-ink-400"}
-                  icon={<CheckCircle size={18} className={donor.eligible_status ? "text-emerald-600" : "text-ink-400"} />}
-                />
-                <StatCard
-                  label="Availability"
-                  value={donor.available_to_donate ? "Available" : "Unavailable"}
-                  valueColor={donor.available_to_donate ? "text-blue-600" : "text-ink-400"}
-                  icon={<Clock size={18} className={donor.available_to_donate ? "text-blue-600" : "text-ink-400"} />}
-                />
+                <div className="relative overflow-hidden rounded-2xl border border-ink-900/10 bg-bone-50 p-5 transition-all hover:border-ink-900/20 hover:shadow-md">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Eligibility</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className={`h-2.5 w-2.5 rounded-full ${donor.eligible_status ? "bg-emerald-500" : "bg-ink-300"}`} />
+                        <p className={`font-display text-xl font-semibold ${donor.eligible_status ? "text-emerald-600" : "text-ink-400"}`}>
+                          {donor.eligible_status ? "Eligible" : "Not Eligible"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${donor.eligible_status ? "bg-emerald-50" : "bg-bone-100"}`}>
+                      <CheckCircle size={18} className={donor.eligible_status ? "text-emerald-600" : "text-ink-400"} />
+                    </span>
+                  </div>
+                </div>
+                <div className="relative overflow-hidden rounded-2xl border border-ink-900/10 bg-bone-50 p-5 transition-all hover:border-ink-900/20 hover:shadow-md">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Availability</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className={`h-2.5 w-2.5 rounded-full ${donor.available_to_donate ? "bg-blue-500" : "bg-ink-300"}`} />
+                        <p className={`font-display text-xl font-semibold ${donor.available_to_donate ? "text-blue-600" : "text-ink-400"}`}>
+                          {donor.available_to_donate ? "Available" : "Unavailable"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${donor.available_to_donate ? "bg-blue-50" : "bg-bone-100"}`}>
+                      <Clock size={18} className={donor.available_to_donate ? "text-blue-600" : "text-ink-400"} />
+                    </span>
+                  </div>
+                </div>
                 <StatCard
                   label="Last Donation"
                   value={donor.last_donation_date || "Never"}
@@ -303,13 +323,15 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-ink-900/10 bg-bone-50 p-5">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bone-100">
-        {icon}
-      </span>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">{label}</p>
-        <p className={`mt-0.5 font-display text-xl font-semibold ${valueColor}`}>{value}</p>
+    <div className="group relative overflow-hidden rounded-2xl border border-ink-900/10 bg-bone-50 p-5 transition-all hover:border-ink-900/20 hover:shadow-md">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">{label}</p>
+          <p className={`mt-1.5 font-display text-xl font-semibold ${valueColor}`}>{value}</p>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bone-100 transition-colors group-hover:bg-blood-50">
+          {icon}
+        </span>
       </div>
     </div>
   );
