@@ -101,7 +101,7 @@ export default function DonorDashboardPage() {
       <div className="min-h-[100dvh] bg-bone-100">
         <DonorNavbar />
 
-        <main className="container-shell py-8 md:py-12">
+        <main className="container-shell pt-24 pb-8 md:pt-28 md:pb-12">
           {donor && (
             <div className="flex flex-col gap-8">
               {/* Welcome Section */}
