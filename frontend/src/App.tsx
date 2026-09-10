@@ -8,7 +8,6 @@ import { NotFoundPage } from "./components/not-found-page";
 const LandingPage = lazy(() => import("./pages/landing-page"));
 const LoginPage = lazy(() => import("./pages/login-page"));
 const SignupPage = lazy(() => import("./pages/signup-page"));
-const DashboardHomePage = lazy(() => import("./pages/dashboard-home-page"));
 const DonorDashboardPage = lazy(() => import("./pages/donor-dashboard-page"));
 const DonorProfilePage = lazy(() => import("./pages/donor-profile-page"));
 const DonorHistoryPage = lazy(() => import("./pages/donor-history-page"));
@@ -37,7 +36,7 @@ export function App() {
           <Route path="/signup-donor" element={<Navigate to="/signup?role=donor" replace />} />
           <Route path="/signup-requester" element={<Navigate to="/signup?role=requester" replace />} />
 
-          <Route path="/dashboard" element={<DashboardHomePage />} />
+          <Route path="/dashboard" element={<Navigate to="/dashboard/donor" replace />} />
           <Route path="/dashboard/donor" element={<DonorDashboardPage />} />
           <Route path="/dashboard/donor/profile" element={<DonorProfilePage />} />
           <Route path="/dashboard/donor/history" element={<DonorHistoryPage />} />

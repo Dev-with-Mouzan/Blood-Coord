@@ -36,7 +36,7 @@ function LoginFormInner() {
           : await authApi.loginRequester(phone, password);
 
       login(role, token);
-      navigate("/dashboard");
+      navigate(role === "donor" ? "/dashboard/donor" : "/dashboard/requester");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Incorrect phone number or password.");
     } finally {
