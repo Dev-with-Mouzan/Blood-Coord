@@ -1,3 +1,58 @@
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "../components/auth/auth-context";
+import { HealthPoller } from "../components/ui/health-poller";
+import { ErrorPage } from "./components/error-page";
+import { NotFoundPage } from "./components/not-found-page";
+
+const LandingPage = lazy(() => import("./pages/landing-page").then(m => ({ default: m.LandingPage })));
+const LoginPage = lazy(() => import("./pages/login-page").then(m => ({ default: m.LoginPage })));
+const SignupPage = lazy(() => import("./pages/signup-page").then(m => ({ default: m.SignupPage })));
+const DashboardHomePage = lazy(() => import("./pages/dashboard-home-page").then(m => ({ default: m.DashboardHomePage })));
+const DonorDashboardPage = lazy(() => import("./pages/donor-dashboard-page").then(m => ({ default: m.DonorDashboardPage })));
+const DonorProfilePage = lazy(() => import("./pages/donor-profile-page").then(m => ({ default: m.DonorProfilePage })));
+const DonorHistoryPage = lazy(() => import("./pages/donor-history-page").then(m => ({ default: m.DonorHistoryPage })));
+const DonorRequestsPage = lazy(() => import("./pages/donor-requests-page").then(m => ({ default: m.DonorRequestsPage })));
+const RequesterDashboardPage = lazy(() => import("./pages/requester-dashboard-page").then(m => ({ default: m.RequesterDashboardPage })));
+const SearchPage = lazy(() => import("./pages/search-page").then(m => ({ default: m.SearchPage })));
+const ChatPage = lazy(() => import("./pages/chat-page").then(m => ({ default: m.ChatPage })));
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-900/15 border-t-blood-600" />
+    </div>
+  );
+}
+
 export function App() {
-  return <div>App placeholder</div>;
+  return (
+    <>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+
+          <Route element={<AuthProvider />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup-donor" element={<Navigate to="/signup?role=donor" replace />} />
+            <Route path="/signup-requester" element={<Navigate to="/signup?role=requester" replace />} />
+
+            <Route path="/dashboard" element={<DashboardHomePage />} />
+            <Route path="/dashboard/donor" element={<DonorDashboardPage />} />
+            <Route path="/dashboard/donor/profile" element={<DonorProfilePage />} />
+            <Route path="/dashboard/donor/history" element={<DonorHistoryPage />} />
+            <Route path="/dashboard/donor/requests" element={<DonorRequestsPage />} />
+            <Route path="/dashboard/requester" element={<RequesterDashboardPage />} />
+
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/chat/:chatId" element={<ChatPage />} />
+          </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+      <HealthPoller />
+    </>
+  );
 }
