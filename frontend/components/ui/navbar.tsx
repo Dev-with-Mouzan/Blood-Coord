@@ -11,6 +11,14 @@ const navLinks = [
   { label: "FAQ", href: "#faq" },
 ];
 
+function scrollToSection(href: string) {
+  const id = href.slice(1);
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
@@ -77,11 +85,15 @@ export function Navbar() {
       }`}
     >
       <div className="container-shell flex h-16 items-center justify-between md:h-[68px]">
-        <Link
-          to="#top"
+        <a
+          href="#top"
           className="flex items-center gap-2.5"
           aria-label="Blood Coord home"
-          onClick={() => setOpen(false)}
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("#top");
+            setOpen(false);
+          }}
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blood-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
             <Drop size={20} weight="fill" />
@@ -89,15 +101,19 @@ export function Navbar() {
           <span className="font-display text-lg font-semibold tracking-tight text-bone-50">
             Blood<span className="text-blood-400">Coord</span>
           </span>
-        </Link>
+        </a>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
           {navLinks.map((link) => {
             const isActive = active === link.href.slice(1);
             return (
-              <Link
+              <a
                 key={link.href}
-                to={link.href}
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection(link.href);
+                }}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-bone-50/10 text-bone-50"
@@ -105,7 +121,7 @@ export function Navbar() {
                 }`}
               >
                 {link.label}
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -152,10 +168,14 @@ export function Navbar() {
               {navLinks.map((link) => {
                 const isActive = active === link.href.slice(1);
                 return (
-                  <Link
+                  <a
                     key={link.href}
- to={link.href}
-                    onClick={() => setOpen(false)}
+                    href={link.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(link.href);
+                      setOpen(false);
+                    }}
                     className={`rounded-xl px-3 py-3 text-base font-medium ${
                       isActive
                         ? "bg-bone-50/10 text-bone-50"
@@ -163,19 +183,19 @@ export function Navbar() {
                     }`}
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 );
               })}
               <div className="mt-3 flex flex-col gap-2 border-t border-bone-50/10 pt-4">
                 <Link
- to="/login"
+                  to="/login"
                   onClick={() => setOpen(false)}
                   className="rounded-full border border-bone-50/20 px-4 py-3 text-center text-sm font-semibold text-bone-50"
                 >
                   Sign in
                 </Link>
                 <Link
- to="/signup-donor"
+                  to="/signup-donor"
                   onClick={() => setOpen(false)}
                   className="rounded-full bg-blood-600 px-4 py-3 text-center text-sm font-semibold text-bone-50"
                 >

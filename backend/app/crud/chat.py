@@ -55,3 +55,11 @@ def get_messages_for_thread(db: Session, thread_id: int) -> list[Message]:
 
 def get_threads_for_request(db: Session, blood_request_id: int):
     return db.query(ChatThread).filter(ChatThread.blood_request_id == blood_request_id).all()
+
+
+def get_threads_for_donor(db: Session, donor_id: int) -> list[ChatThread]:
+    return db.query(ChatThread).filter(ChatThread.donor_id == donor_id).order_by(ChatThread.created_at.desc()).all()
+
+
+def get_threads_for_requester(db: Session, requester_id: int) -> list[ChatThread]:
+    return db.query(ChatThread).filter(ChatThread.requester_id == requester_id).order_by(ChatThread.created_at.desc()).all()

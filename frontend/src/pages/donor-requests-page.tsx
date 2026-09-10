@@ -16,7 +16,7 @@ export default function DonorRequestsPage() {
         <main className="container-shell pt-24 pb-8 md:pt-28 md:pb-12">
           {donor && (
             <div className="flex flex-col gap-8">
-              <div>
+              <div className="text-center">
                 <h1 className="font-display text-3xl font-semibold tracking-tight text-ink-950 md:text-4xl">
                   Blood Requests
                 </h1>

@@ -84,7 +84,7 @@ export default function DonorProfilePage() {
         <main className="container-shell pt-24 pb-8 md:pt-28 md:pb-12">
           {donor && (
             <div className="flex flex-col gap-8">
-              <div>
+              <div className="text-center">
                 <h1 className="font-display text-3xl font-semibold tracking-tight text-ink-950 md:text-4xl">
                   My Profile
                 </h1>
@@ -229,8 +229,10 @@ export default function DonorProfilePage() {
                         role="switch"
                         aria-checked={formData.available_to_donate}
                         onClick={handleToggleAvailable}
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-                          formData.available_to_donate ? "bg-blood-600" : "bg-ink-200"
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-all ${
+                          formData.available_to_donate
+                            ? "bg-blood-600"
+                            : "bg-ink-200 shadow-[0_0_10px_rgba(0,0,0,0.15)]"
                         }`}
                       >
                         <span

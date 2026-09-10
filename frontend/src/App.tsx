@@ -10,9 +10,13 @@ const LoginPage = lazy(() => import("./pages/login-page"));
 const SignupPage = lazy(() => import("./pages/signup-page"));
 const DonorDashboardPage = lazy(() => import("./pages/donor-dashboard-page"));
 const DonorProfilePage = lazy(() => import("./pages/donor-profile-page"));
-const DonorHistoryPage = lazy(() => import("./pages/donor-history-page"));
 const DonorRequestsPage = lazy(() => import("./pages/donor-requests-page"));
+const DonorHistoryPage = lazy(() => import("./pages/donor-history-page"));
+const DonorChatsPage = lazy(() => import("./pages/donor-chats-page"));
 const RequesterDashboardPage = lazy(() => import("./pages/requester-dashboard-page"));
+const RequesterProfilePage = lazy(() => import("./pages/requester-profile-page"));
+const RequesterRequestsPage = lazy(() => import("./pages/requester-requests-page"));
+const RequesterChatsPage = lazy(() => import("./pages/requester-chats-page"));
 const SearchPage = lazy(() => import("./pages/search-page"));
 const ChatPage = lazy(() => import("./pages/chat-page"));
 
@@ -39,9 +43,14 @@ export function App() {
           <Route path="/dashboard" element={<Navigate to="/dashboard/donor" replace />} />
           <Route path="/dashboard/donor" element={<DonorDashboardPage />} />
           <Route path="/dashboard/donor/profile" element={<DonorProfilePage />} />
+          <Route path="/dashboard/donor/requests" element={<DonorRequestsPage />} />
           <Route path="/dashboard/donor/history" element={<DonorHistoryPage />} />
+          <Route path="/dashboard/donor/chats" element={<DonorChatsPage />} />
           <Route path="/dashboard/donor/requests" element={<DonorRequestsPage />} />
           <Route path="/dashboard/requester" element={<RequesterDashboardPage />} />
+          <Route path="/dashboard/requester/profile" element={<RequesterProfilePage />} />
+          <Route path="/dashboard/requester/requests" element={<RequesterRequestsPage />} />
+          <Route path="/dashboard/requester/chats" element={<RequesterChatsPage />} />
 
           <Route path="/search" element={<SearchPage />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />

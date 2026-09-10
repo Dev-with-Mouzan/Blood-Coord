@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/auth-context";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Drop, List, X, Bell } from "@phosphor-icons/react";
 import { getToken } from "@/lib/auth-client";
+import type { Notification } from "@/types";
 
 const navLinks = [
   { label: "Dashboard", href: "/dashboard/donor" },
   { label: "My Profile", href: "/dashboard/donor/profile" },
   { label: "Blood Requests", href: "/dashboard/donor/requests" },
   { label: "Donation History", href: "/dashboard/donor/history" },
+  { label: "Messages", href: "/dashboard/donor/chats" },
 ];
 
 export function DonorNavbar() {
@@ -19,10 +21,13 @@ export function DonorNavbar() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const donor = user && "blood_group" in user ? user : null;
 
-  useEffect(() => {
+  const fetchUnreadCount = () => {
     const token = getToken("donor");
     if (!token) return;
     fetch("/api/v1/donors/me/notifications/unread-count", {
@@ -31,7 +36,67 @@ export function DonorNavbar() {
       .then((r) => r.json())
       .then((data) => setUnreadCount(data.count ?? 0))
       .catch(() => {});
+  };
+
+  const fetchNotifications = () => {
+    const token = getToken("donor");
+    if (!token) return;
+    fetch("/api/v1/donors/me/notifications", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setNotifications(data))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
   }, [pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleBellClick = () => {
+    setShowNotifications((v) => !v);
+    if (!showNotifications) {
+      fetchNotifications();
+    }
+  };
+
+  const markAsRead = async (id: number) => {
+    const token = getToken("donor");
+    if (!token) return;
+    try {
+      await fetch(`/api/v1/donors/me/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch {}
+  };
+
+  const markAllAsRead = async () => {
+    const token = getToken("donor");
+    if (!token) return;
+    try {
+      await fetch("/api/v1/donors/me/notifications/read-all", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch {}
+  };
 
   function handleLogout() {
     logout();
@@ -70,25 +135,68 @@ export function DonorNavbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          {donor && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blood-400/30 bg-blood-600/20 px-3 py-1.5 text-xs font-semibold text-blood-400">
-              <Drop size={12} weight="fill" />
-              {donor.blood_group}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard/donor")}
-            className="relative rounded-full p-2 text-bone-200 transition-colors hover:bg-bone-50/10 hover:text-bone-50"
-            aria-label="Notifications"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blood-500 px-1 text-[10px] font-bold text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={handleBellClick}
+              className="relative rounded-full p-2 text-bone-200 transition-colors hover:bg-bone-50/10 hover:text-bone-50"
+              aria-label="Notifications"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blood-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-ink-900/10 bg-bone-50 shadow-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-ink-900/10 px-4 py-3">
+                    <h3 className="font-display text-sm font-semibold text-ink-950">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllAsRead}
+                        className="text-xs font-medium text-blood-600 hover:text-blood-500"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-sm text-ink-400">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => !n.is_read && markAsRead(n.id)}
+                          className={`cursor-pointer border-b border-ink-900/5 px-4 py-3 transition-colors hover:bg-ink-900/5 ${
+                            !n.is_read ? "bg-blood-50/50" : ""
+                          }`}
+                        >
+                          <p className="text-sm font-medium text-ink-900">{n.title}</p>
+                          <p className="mt-0.5 text-xs text-ink-500 line-clamp-2">{n.message}</p>
+                          <p className="mt-1 text-[10px] text-ink-400">
+                            {new Date(n.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             type="button"
             onClick={handleLogout}
@@ -138,12 +246,6 @@ export function DonorNavbar() {
                 );
               })}
               <div className="mt-3 flex flex-col gap-2 border-t border-bone-50/10 pt-4">
-                {donor && (
-                  <span className="inline-flex items-center justify-center gap-1.5 rounded-full border border-blood-400/30 bg-blood-600/20 px-4 py-2.5 text-sm font-semibold text-blood-400">
-                    <Drop size={14} weight="fill" />
-                    {donor.blood_group}
-                  </span>
-                )}
                 <button
                   type="button"
                   onClick={() => { navigate("/dashboard/donor"); setOpen(false); }}

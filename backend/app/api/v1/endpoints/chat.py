@@ -10,10 +10,15 @@ from app.crud.chat import (
     get_messages_for_thread,
     get_or_create_thread,
     get_thread_by_public_id,
+    get_threads_for_donor,
+    get_threads_for_requester,
 )
 from app.crud.donor import get_donor_by_public_id
 from app.crud.requester import get_requester_by_public_id
 from app.dependencies import get_current_donor_or_requester
+from app.models.donor import Donor
+from app.models.requester import Requester
+from app.models.chat import Message
 from app.schemas.chat import ChatThreadCreate, ChatThreadOut, MessageCreate, MessageOut
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -60,6 +65,48 @@ def create_thread(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid role")
 
     return thread
+
+
+@router.get("/threads")
+def list_threads(
+    auth=Depends(get_current_donor_or_requester),
+    db: Session = Depends(get_db),
+):
+    role, user = auth
+
+    if role == "donor":
+        threads = get_threads_for_donor(db, user.id)
+        result = []
+        for thread in threads:
+            requester = db.query(Requester).filter(Requester.id == thread.requester_id).first()
+            last_msg = db.query(Message).filter(Message.thread_id == thread.id).order_by(Message.created_at.desc()).first()
+            result.append({
+                "public_id": str(thread.public_id),
+                "donor_name": requester.name if requester else "Unknown",
+                "donor_blood_group": "",
+                "last_message": last_msg.content if last_msg else "",
+                "last_message_time": last_msg.created_at.isoformat() if last_msg else "",
+                "unread_count": 0,
+            })
+        return result
+
+    elif role == "requester":
+        threads = get_threads_for_requester(db, user.id)
+        result = []
+        for thread in threads:
+            donor = db.query(Donor).filter(Donor.id == thread.donor_id).first()
+            last_msg = db.query(Message).filter(Message.thread_id == thread.id).order_by(Message.created_at.desc()).first()
+            result.append({
+                "public_id": str(thread.public_id),
+                "donor_name": donor.name if donor else "Unknown",
+                "donor_blood_group": donor.blood_group if donor else "",
+                "last_message": last_msg.content if last_msg else "",
+                "last_message_time": last_msg.created_at.isoformat() if last_msg else "",
+                "unread_count": 0,
+            })
+        return result
+
+    return []
 
 
 @router.post("/threads/{thread_public_id}/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED)

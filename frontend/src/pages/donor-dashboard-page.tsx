@@ -181,7 +181,7 @@ export default function DonorDashboardPage() {
 
               {/* Quick Actions */}
               <div>
-                <h2 className="mb-4 font-display text-lg font-semibold text-ink-950">
+                <h2 className="mb-4 text-center font-display text-lg font-semibold text-ink-950">
                   Quick Actions
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -189,16 +189,15 @@ export default function DonorDashboardPage() {
                     <Link
                       key={action.to}
                       to={action.to}
-                      className="group flex items-center gap-4 rounded-2xl border border-ink-900/10 bg-bone-50 p-5 transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
+                      className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-900/10 bg-bone-50 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
                     >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
-                        <action.icon size={22} weight="duotone" />
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
+                        <action.icon size={24} weight="duotone" />
                       </span>
-                      <div className="min-w-0">
+                      <div>
                         <p className="text-sm font-semibold text-ink-950">{action.label}</p>
-                        <p className="mt-0.5 text-xs text-ink-500 truncate">{action.description}</p>
+                        <p className="mt-1 text-xs text-ink-500">{action.description}</p>
                       </div>
-                      <ArrowRight size={16} className="ml-auto shrink-0 text-ink-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blood-600" />
                     </Link>
                   ))}
                 </div>
@@ -208,7 +207,7 @@ export default function DonorDashboardPage() {
               <div className="grid gap-6 lg:grid-cols-5">
                 {/* Activity Feed */}
                 <div className="lg:col-span-2 rounded-3xl border border-ink-900/10 bg-bone-50">
-                  <div className="border-b border-ink-900/10 px-6 py-4">
+                  <div className="border-b border-ink-900/10 px-6 py-4 text-center">
                     <h2 className="font-display text-lg font-semibold text-ink-950">
                       Recent Activity
                     </h2>
@@ -252,16 +251,10 @@ export default function DonorDashboardPage() {
 
                 {/* Donation History */}
                 <div className="lg:col-span-3 rounded-3xl border border-ink-900/10 bg-bone-50">
-                  <div className="flex items-center justify-between border-b border-ink-900/10 px-6 py-4">
+                  <div className="flex items-center justify-center border-b border-ink-900/10 px-6 py-4">
                     <h2 className="font-display text-lg font-semibold text-ink-950">
                       Donation History
                     </h2>
-                    <Link
-                      to="/dashboard/donor/history"
-                      className="text-sm font-semibold text-blood-600 hover:text-blood-700"
-                    >
-                      View all
-                    </Link>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">

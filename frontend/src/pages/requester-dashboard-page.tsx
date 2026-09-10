@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
-import { DashboardShell } from "@/components/ui/dashboard-shell";
-import { Button, Field, Select, TextInput } from "@/components/ui/form";
-import { requestsApi, URGENCY_LEVELS } from "@/lib/requests";
-import type { BloodGroup, BloodRequest, RequesterProfile } from "@/types";
-
-const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+import { RequesterNavbar } from "@/components/ui/requester-navbar";
+import { requestsApi } from "@/lib/requests";
+import type { BloodRequest, RequesterProfile } from "@/types";
+import {
+  UserCircle,
+  Plus,
+} from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 
 export default function RequesterDashboardPage() {
   const { user } = useAuth();
@@ -14,18 +16,80 @@ export default function RequesterDashboardPage() {
 
   return (
     <AuthGate>
-      <DashboardShell title={requester ? `Welcome, ${requester.name.split(" ")[0]}` : "Requester dashboard"}>
-        <RequesterContent />
-      </DashboardShell>
+      <div className="min-h-[100dvh] bg-bone-100">
+        <RequesterNavbar />
+
+        <main className="container-shell pt-24 pb-8 md:pt-28 md:pb-12">
+          {requester && (
+            <div className="flex flex-col gap-8">
+              {/* Welcome Section */}
+              <div className="relative overflow-hidden rounded-3xl border border-ink-900/10 bg-bone-50 p-8 md:p-10">
+                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blood-100/60" />
+                <div className="absolute -bottom-12 -right-12 h-36 w-36 rounded-full bg-blood-50" />
+
+                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-5">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blood-600 font-display text-2xl font-bold text-white shadow-lg shadow-blood-600/20">
+                      {requester.name.charAt(0)}
+                    </span>
+                    <div>
+                      <h1 className="font-display text-3xl font-semibold tracking-tight text-ink-950 md:text-4xl">
+                        Hello, {requester.name.split(" ")[0]}
+                      </h1>
+                      <p className="mt-1 text-ink-500">
+                        Welcome back to your requester dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <h2 className="mb-4 text-center font-display text-lg font-semibold text-ink-950">
+                  Quick Actions
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Link
+                    to="/dashboard/requester/requests"
+                    className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-900/10 bg-bone-50 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
+                      <Plus size={24} weight="duotone" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-ink-950">New Request</p>
+                      <p className="mt-1 text-xs text-ink-500">Create a new blood request</p>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/dashboard/requester/profile"
+                    className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-900/10 bg-bone-50 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
+                      <UserCircle size={24} weight="duotone" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-ink-950">My Profile</p>
+                      <p className="mt-1 text-xs text-ink-500">Update your information</p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+
+              {/* My Requests */}
+              <RequesterRequests />
+            </div>
+          )}
+        </main>
+      </div>
     </AuthGate>
   );
 }
 
-function RequesterContent() {
+function RequesterRequests() {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -41,147 +105,79 @@ function RequesterContent() {
     load();
   }, [load]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setMessage(null);
-    setSubmitting(true);
-    const form = new FormData(e.currentTarget);
-    const payload = {
-      blood_type: String(form.get("blood_type") ?? "") as BloodGroup,
-      address: String(form.get("address") ?? "").trim(),
-      hospital: String(form.get("hospital") ?? "").trim(),
-      units_needed: Number(form.get("units_needed")) || 1,
-      urgency: String(form.get("urgency") ?? "NORMAL") as BloodRequest["urgency"],
-      patient_context: String(form.get("patient_context") ?? "").trim() || undefined,
-    };
+  const statusStyles: Record<string, string> = {
+    PENDING: "bg-blue-100 text-blue-700",
+    MATCHING: "bg-amber-100 text-amber-700",
+    FULFILLED: "bg-emerald-100 text-emerald-700",
+    CLOSED: "bg-ink-100 text-ink-500",
+  };
 
-    try {
-      await requestsApi.create(payload);
-      setMessage({ kind: "ok", text: "Request submitted. We're matching it now." });
-      e.currentTarget.reset();
-      load();
-    } catch (err) {
-      setMessage({ kind: "err", text: err instanceof Error ? err.message : "Failed to submit request." });
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const urgencyStyles: Record<string, string> = {
+    CRITICAL: "bg-red-100 text-red-700",
+    URGENT: "bg-amber-100 text-amber-700",
+    NORMAL: "bg-emerald-100 text-emerald-700",
+  };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-3xl border border-ink-900/10 bg-bone-50 p-8">
-        <h2 className="font-display text-xl font-semibold tracking-tight text-ink-950">
-          Create a blood request
+    <div className="rounded-3xl border border-ink-900/10 bg-bone-50">
+      <div className="flex items-center justify-center border-b border-ink-900/10 px-6 py-4">
+        <h2 className="font-display text-lg font-semibold text-ink-950">
+          My Requests
         </h2>
-        <p className="mt-1 text-sm text-ink-500">
-          Matching runs against eligible, available donors nearby.
-        </p>
-
-        {message ? (
-          <div
-            className={
-              "mt-4 rounded-xl border px-4 py-3 text-sm " +
-              (message.kind === "ok"
-                ? "border-emerald-600/20 bg-emerald-50 text-emerald-700"
-                : "border-blood-600/20 bg-blood-50 text-blood-700")
-            }
-          >
-            {message.text}
-          </div>
-        ) : null}
-
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <Field label="Blood group needed" htmlFor="blood_type">
-            <Select id="blood_type" name="blood_type" required defaultValue="">
-              <option value="" disabled>
-                Select
-              </option>
-              {BLOOD_GROUPS.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          <Field label="Hospital" htmlFor="hospital">
-            <TextInput id="hospital" name="hospital" required minLength={2} placeholder="City General Hospital" />
-          </Field>
-
-          <Field label="Location / area" htmlFor="address">
-            <TextInput id="address" name="address" required minLength={3} placeholder="City, locality" />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Units needed" htmlFor="units_needed">
-              <TextInput id="units_needed" name="units_needed" type="number" min={1} max={50} defaultValue={1} />
-            </Field>
-            <Field label="Urgency" htmlFor="urgency">
-              <Select id="urgency" name="urgency" defaultValue="NORMAL">
-                {URGENCY_LEVELS.map((u) => (
-                  <option key={u} value={u}>
-                    {u.charAt(0) + u.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-
-          <Field label="Patient context (optional)" htmlFor="patient_context">
-            <TextInput id="patient_context" name="patient_context" placeholder="e.g. Emergency surgery, O- blood" />
-          </Field>
-
-          <Button type="submit" fullWidth loading={submitting}>
-            Submit request
-          </Button>
-        </form>
       </div>
-
-      <div className="rounded-3xl border border-ink-900/10 bg-bone-50 p-8">
-        <h2 className="font-display text-xl font-semibold tracking-tight text-ink-950">
-          Your requests
-        </h2>
-        <p className="mt-1 text-sm text-ink-500">Track how quickly each request gets a donor.</p>
-
-        <div className="mt-6 flex flex-col gap-3">
-          {loading ? (
-            <div className="flex h-24 items-center justify-center">
-              <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink-900/15 border-t-blood-600" />
-            </div>
-          ) : requests.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink-900/15 px-5 py-8 text-center text-sm text-ink-500">
+      <div className="overflow-x-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-900/15 border-t-blood-600" />
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <p className="text-sm text-ink-500">
               No requests yet. Create your first blood request.
             </p>
-          ) : (
-            requests.map((r) => (
-              <div
-                key={r.public_id}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-ink-900/10 bg-bone-100 px-5 py-4"
-              >
-                <div>
-                  <p className="font-semibold text-ink-950">
-                    {r.hospital}
-                  </p>
-                  <p className="text-sm text-ink-500">
-                    {r.blood_type} · {r.units_needed} unit{r.units_needed > 1 ? "s" : ""} · {r.address}
-                  </p>
-                </div>
-                <span
-                  className={
-                    "inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold " +
-                    (r.status === "PENDING"
-                      ? "bg-amber-100 text-amber-700"
-                      : r.status === "FULFILLED"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-ink-900/10 text-ink-600")
-                  }
-                >
-                  {r.status.charAt(0) + r.status.slice(1).toLowerCase()}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+          </div>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-ink-900/10 text-xs font-semibold uppercase tracking-wider text-ink-400">
+                <th className="px-6 py-3">Hospital</th>
+                <th className="px-6 py-3">Blood Type</th>
+                <th className="px-6 py-3">Units</th>
+                <th className="px-6 py-3">Urgency</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Posted</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-900/5">
+              {requests.map((req) => (
+                <tr key={req.public_id} className="hover:bg-ink-900/5">
+                  <td className="px-6 py-4 font-medium text-ink-900">
+                    {req.hospital}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="rounded-full bg-blood-100 px-2.5 py-1 text-xs font-semibold text-blood-700">
+                      {req.blood_type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-ink-700">{req.units_needed}</td>
+                  <td className="px-6 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${urgencyStyles[req.urgency] || ""}`}>
+                      {req.urgency}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[req.status] || ""}`}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-ink-500">
+                    {new Date(req.created_at).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
