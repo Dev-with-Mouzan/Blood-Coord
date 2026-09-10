@@ -69,11 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setRole(currentRole);
     } catch {
-      if (currentRole === "donor") {
-        setUser(MOCK_DONOR);
-      } else {
-        setUser(MOCK_REQUESTER);
-      }
       setRole(currentRole);
     } finally {
       setLoading(false);
