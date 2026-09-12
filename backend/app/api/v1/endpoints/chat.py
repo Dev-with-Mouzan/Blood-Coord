@@ -14,6 +14,7 @@ from app.crud.chat import (
     get_threads_for_requester,
 )
 from app.crud.donor import get_donor_by_public_id
+from app.crud.donor_request import get_donor_request_by_donor_and_blood_request
 from app.crud.requester import get_requester_by_public_id
 from app.dependencies import get_current_donor_or_requester
 from app.models.donor import Donor
@@ -58,7 +59,7 @@ def _create_message_notification(db: Session, thread: ChatThread, sender_role: s
             blood_request_id=thread.blood_request_id,
         )
     db.add(notif)
-    db.commit()
+    # Don't commit here - let the caller handle the transaction
 
 
 @router.post("/threads", response_model=ChatThreadOut, status_code=status.HTTP_201_CREATED)
@@ -84,10 +85,23 @@ def create_thread(
         if donor is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Donor not found")
 
+        dr = get_donor_request_by_donor_and_blood_request(db, donor.id, blood_request.id)
+        if not dr or dr.status != "ACCEPTED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Chat not available until donor accepts your request",
+            )
+
         thread = get_or_create_thread(db, donor.id, user.id, blood_request.id)
 
     elif role == "donor":
-        # donor-initiated: they are the donor, requester comes from the blood_request itself
+        dr = get_donor_request_by_donor_and_blood_request(db, user.id, blood_request.id)
+        if not dr or dr.status != "ACCEPTED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Chat not available until you accept this request",
+            )
+
         thread = get_or_create_thread(db, user.id, blood_request.requester_id, blood_request.id)
 
     else:
@@ -112,6 +126,7 @@ def list_threads(
             unread_count = db.query(Message).filter(
                 Message.thread_id == thread.id,
                 Message.sender_role == "requester",
+                Message.is_read == False,
             ).count()
             result.append({
                 "public_id": str(thread.public_id),
@@ -132,6 +147,7 @@ def list_threads(
             unread_count = db.query(Message).filter(
                 Message.thread_id == thread.id,
                 Message.sender_role == "donor",
+                Message.is_read == False,
             ).count()
             result.append({
                 "public_id": str(thread.public_id),
@@ -183,5 +199,20 @@ def read_messages(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found")
 
     _check_participant(thread, role, user)
+
+    # Mark messages from the other party as read
+    if role == "donor":
+        db.query(Message).filter(
+            Message.thread_id == thread.id,
+            Message.sender_role == "requester",
+            Message.is_read == False,
+        ).update({"is_read": True})
+    else:
+        db.query(Message).filter(
+            Message.thread_id == thread.id,
+            Message.sender_role == "donor",
+            Message.is_read == False,
+        ).update({"is_read": True})
+    db.commit()
 
     return get_messages_for_thread(db, thread.id)

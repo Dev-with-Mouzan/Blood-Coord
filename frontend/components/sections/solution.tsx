@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   Clock,
   ChatCircleDots,
-} from "@phosphor-icons/react/ssr";
+} from "@phosphor-icons/react";
 
 const features = [
   {
@@ -63,10 +63,24 @@ export function Solution() {
             </p>
           </Reveal>
 
-          <div className="flex flex-col gap-0">
+          <div className="flex flex-col gap-3 sm:gap-0">
             {features.map((f, i) => (
               <Reveal key={f.title} delay={i * 0.06}>
-                <div className="flex gap-5 border-t border-ink-900/10 py-6 first:border-t-0">
+                {/* Mobile card */}
+                <div className="flex gap-4 rounded-2xl border border-ink-900/8 bg-bone-50 p-5 sm:hidden">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blood-100 text-blood-600">
+                    <f.icon size={20} weight="duotone" />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-base font-semibold tracking-tight text-ink-950">
+                      {f.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-pretty leading-relaxed text-ink-600">{f.body}</p>
+                  </div>
+                </div>
+
+                {/* Desktop row */}
+                <div className="hidden gap-5 border-t border-ink-900/10 py-6 first:border-t-0 sm:flex">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blood-100 text-blood-600">
                     <f.icon size={22} weight="duotone" />
                   </span>
@@ -81,7 +95,7 @@ export function Solution() {
             ))}
           </div>
 
-          <Reveal className="mt-8">
+          <Reveal className="mt-8 text-center sm:text-left">
             <Link
               to="/signup-donor"
               className="inline-flex items-center gap-2 rounded-full bg-ink-950 px-6 py-3 text-sm font-semibold text-bone-50 transition-colors hover:bg-ink-800 active:translate-y-[1px]"

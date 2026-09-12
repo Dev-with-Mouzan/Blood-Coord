@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Drop, SignOut } from "@phosphor-icons/react";
 import { useAuth } from "@/components/auth/auth-context";
@@ -23,7 +22,7 @@ export function DashboardShell({
     <div className="min-h-[100dvh] bg-bone-100">
       <header className="sticky top-0 z-40 border-b border-ink-900/10 bg-bone-50/80 backdrop-blur-md">
         <div className="container-shell flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to={role === "requester" ? "/dashboard/requester" : "/dashboard/donor"} className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blood-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
               <Drop size={20} weight="fill" />
             </span>

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Reveal } from "@/components/ui/reveal";
-import { Drop } from "@phosphor-icons/react/ssr";
+import { Drop } from "@phosphor-icons/react";
 
 export function CTA() {
   return (

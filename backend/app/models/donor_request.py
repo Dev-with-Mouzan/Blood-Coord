@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy import String as GenericString
@@ -15,21 +15,20 @@ def _uuid_column():
     return Column(GenericString(36), unique=True, default=lambda: str(uuid.uuid4()), index=True)
 
 
-class BloodRequest(Base):
-    __tablename__ = "blood_requests"
+class DonorRequest(Base):
+    __tablename__ = "donor_requests"
+    __table_args__ = (
+        UniqueConstraint("donor_id", "blood_request_id", name="uq_donor_blood_request"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     public_id = _uuid_column()
 
+    blood_request_id = Column(Integer, ForeignKey("blood_requests.id"), nullable=False, index=True)
     requester_id = Column(Integer, ForeignKey("requesters.id"), nullable=False, index=True)
+    donor_id = Column(Integer, ForeignKey("donors.id"), nullable=False, index=True)
 
-    blood_type = Column(String, nullable=False, index=True)
-    address = Column(String, nullable=False)
-    hospital = Column(String, nullable=False)
-    units_needed = Column(Integer, nullable=False, default=1)
-    urgency = Column(String, nullable=False, default="NORMAL")
-    patient_context = Column(String, nullable=True)
-    status = Column(String, nullable=False, default="PENDING", index=True)
+    status = Column(String, nullable=False, default="PENDING", index=True)  # PENDING | ACCEPTED | REJECTED
 
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
     updated_at = Column(
@@ -39,9 +38,18 @@ class BloodRequest(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    requester = relationship("Requester", back_populates="blood_requests")
+    blood_request = relationship("BloodRequest")
+    requester = relationship("Requester")
+    donor = relationship("Donor")
 
     @property
     def requester_public_id(self) -> str:
         return str(self.requester.public_id) if self.requester else ""
 
+    @property
+    def donor_public_id(self) -> str:
+        return str(self.donor.public_id) if self.donor else ""
+
+    @property
+    def blood_request_public_id(self) -> str:
+        return str(self.blood_request.public_id) if self.blood_request else ""

@@ -2,7 +2,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { RequesterNavbar } from "@/components/ui/requester-navbar";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User, MapPin, Shield, SignOut, Pencil, Check, X } from "@phosphor-icons/react";
 import { api } from "@/lib/api";
 import { getToken } from "@/lib/auth-client";
@@ -12,6 +12,7 @@ export default function RequesterProfilePage() {
   const { user, logout, refresh } = useAuth();
   const navigate = useNavigate();
   const requester = user && "address" in user && !("blood_group" in user) ? (user as RequesterProfile) : null;
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,7 +47,8 @@ export default function RequesterProfilePage() {
       await refresh();
       setSaved(true);
       setEditing(false);
-      setTimeout(() => setSaved(false), 3000);
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current);
+      savedTimeoutRef.current = setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error(err);
     } finally {

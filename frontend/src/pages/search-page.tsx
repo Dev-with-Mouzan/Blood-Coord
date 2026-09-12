@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import {
-  MagnifyingGlass,
   Drop,
   ArrowRight,
   MapPin,
@@ -14,6 +13,7 @@ import { AuthGate } from "@/components/auth/auth-gate";
 import { DashboardShell } from "@/components/ui/dashboard-shell";
 import { Button } from "@/components/ui/form";
 import { api } from "@/lib/api";
+import { requestsApi } from "@/lib/requests";
 import { getToken } from "@/lib/auth-client";
 import type { BloodRequest, DonorProfile } from "@/types";
 
@@ -181,19 +181,17 @@ function RequestRow({
   role: "donor";
 }) {
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false);
 
-  async function handleContact() {
-    const token = getToken(role);
-    if (!token) return;
+  async function handleSendRequest() {
+    setSending(true);
     try {
-      const thread = await api.post<{ public_id: string }>(
-        "/chat/threads",
-        { request_public_id: request.public_id },
-        token
-      );
-      navigate(`/chat/${thread.public_id}`);
+      await requestsApi.sendRequest(request.public_id, request.requester_public_id);
+      navigate("/dashboard/donor/requests");
     } catch {
       // silently fail
+    } finally {
+      setSending(false);
     }
   }
 
@@ -230,8 +228,8 @@ function RequestRow({
           <p className="mt-1 text-xs text-ink-400">{request.patient_context}</p>
         )}
       </div>
-      <Button onClick={handleContact} className="shrink-0">
-        Contact
+      <Button onClick={handleSendRequest} disabled={sending} className="shrink-0">
+        {sending ? "Sending..." : "Send Request"}
       </Button>
     </motion.div>
   );
@@ -247,19 +245,17 @@ function DonorRow({
   delay: number;
 }) {
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false);
 
-  async function handleContact() {
-    const token = getToken("requester");
-    if (!token) return;
+  async function handleSendRequest() {
+    setSending(true);
     try {
-      const thread = await api.post<{ public_id: string }>(
-        "/chat/threads",
-        { request_public_id: requestId, donor_public_id: donor.public_id },
-        token
-      );
-      navigate(`/chat/${thread.public_id}`);
+      await requestsApi.sendRequest(requestId, donor.public_id);
+      navigate("/dashboard/requester/requests");
     } catch {
       // silently fail
+    } finally {
+      setSending(false);
     }
   }
 
@@ -296,8 +292,8 @@ function DonorRow({
           </span>
         </div>
       </div>
-      <Button onClick={handleContact} className="shrink-0">
-        Contact
+      <Button onClick={handleSendRequest} disabled={sending} className="shrink-0">
+        {sending ? "Sending..." : "Send Request"}
       </Button>
     </motion.div>
   );

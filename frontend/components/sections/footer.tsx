@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Drop } from "@phosphor-icons/react/ssr";
+import { Drop } from "@phosphor-icons/react";
 
 const columns = [
   {

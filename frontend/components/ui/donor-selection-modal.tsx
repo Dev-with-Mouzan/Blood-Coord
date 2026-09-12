@@ -62,8 +62,6 @@ export function DonorSelectionModal({ requestPublicId, onClose, onNotified }: Do
         onClose();
       }, 1500);
     } catch {
-      // handle error
-    } finally {
       setSending(false);
     }
   }
@@ -230,25 +228,19 @@ function DonorCard({
   isExact: boolean;
   requestPublicId: string;
 }) {
-  const navigate = useNavigate();
-  const [creatingChat, setCreatingChat] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  async function handleMessage(e: React.MouseEvent) {
+  async function handleSendRequest(e: React.MouseEvent) {
     e.stopPropagation();
-    setCreatingChat(true);
+    setSending(true);
     try {
-      const token = getToken("requester");
-      if (!token) return;
-      const thread = await api.post<{ public_id: string }>(
-        "/chat/threads",
-        { request_public_id: requestPublicId, donor_public_id: donor.public_id },
-        token
-      );
-      navigate(`/chat/${thread.public_id}`);
+      await requestsApi.sendRequest(requestPublicId, donor.public_id);
+      setSent(true);
     } catch {
       // handle silently
     } finally {
-      setCreatingChat(false);
+      setSending(false);
     }
   }
 
@@ -273,15 +265,21 @@ function DonorCard({
         <p className="text-sm font-semibold text-ink-900">{donor.name}</p>
         <p className="mt-0.5 text-xs text-ink-500 truncate">{donor.address}</p>
       </div>
-      <button
-        type="button"
-        onClick={handleMessage}
-        disabled={creatingChat}
-        className="shrink-0 rounded-full p-2 text-ink-400 transition-colors hover:bg-blood-50 hover:text-blood-600"
-        title="Message donor"
-      >
-        <ChatCircleDots size={18} />
-      </button>
+      {sent ? (
+        <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+          Request Sent
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={handleSendRequest}
+          disabled={sending}
+          className="shrink-0 rounded-full bg-blood-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blood-500 disabled:opacity-50"
+          title="Send request to donor"
+        >
+          {sending ? "Sending..." : "Send Request"}
+        </button>
+      )}
       <span
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           selected

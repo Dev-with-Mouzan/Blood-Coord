@@ -76,7 +76,10 @@ export default function DonorDashboardPage() {
     fetch("/api/v1/donors/me/notifications", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
       .then((data) => setNotifications(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
@@ -90,32 +93,32 @@ export default function DonorDashboardPage() {
           {donor && (
             <div className="flex flex-col gap-8">
               {/* Welcome Section */}
-              <div className="relative overflow-hidden rounded-3xl border border-ink-900/10 bg-bone-50 p-8 md:p-10">
+              <div className="relative overflow-hidden rounded-3xl border border-ink-900/10 bg-bone-50 p-5 sm:p-8 md:p-10">
                 <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blood-100/60" />
                 <div className="absolute -bottom-12 -right-12 h-36 w-36 rounded-full bg-blood-50" />
 
-                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-5">
-                    <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blood-600 font-display text-2xl font-bold text-white shadow-lg shadow-blood-600/20">
+                <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                  <div className="flex items-center gap-4 sm:items-center sm:gap-5">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blood-600 font-display text-xl font-bold text-white shadow-lg shadow-blood-600/20 sm:h-16 sm:w-16 sm:text-2xl">
                       {donor.name.charAt(0)}
                     </span>
                     <div>
-                      <h1 className="font-display text-3xl font-semibold tracking-tight text-ink-950 md:text-4xl">
+                      <h1 className="font-display text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl md:text-4xl">
                         Hello, {donor.name.split(" ")[0]}
                       </h1>
-                      <p className="mt-1 text-ink-500">
+                      <p className="mt-0.5 text-sm text-ink-500 sm:mt-1 sm:text-base">
                         Welcome back to your donor dashboard.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-blood-200 bg-blood-50 px-4 py-2 text-sm font-semibold text-blood-700">
-                      <Drop size={14} weight="fill" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-blood-200 bg-blood-50 px-3 py-1.5 text-xs font-semibold text-blood-700 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm">
+                      <Drop size={13} weight="fill" className="sm:size-3.5" />
                       {donor.blood_group}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:gap-1.5 sm:px-4 sm:py-2 sm:text-sm ${
                         donor.eligible_status
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-ink-100 text-ink-500"
@@ -133,7 +136,7 @@ export default function DonorDashboardPage() {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <StatCard
                   label="Blood Group"
                   value={donor.blood_group}
@@ -180,22 +183,22 @@ export default function DonorDashboardPage() {
 
               {/* Quick Actions */}
               <div>
-                <h2 className="mb-4 text-center font-display text-lg font-semibold text-ink-950">
+                <h2 className="mb-3 text-center font-display text-base font-semibold text-ink-950 sm:mb-4 sm:text-lg">
                   Quick Actions
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
                   {quickActions.map((action) => (
                     <Link
                       key={action.to}
                       to={action.to}
-                      className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-900/10 bg-bone-50 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5"
+                      className="group flex flex-col items-center gap-2 rounded-2xl border border-ink-900/10 bg-bone-50 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-blood-500/30 hover:shadow-lg hover:shadow-blood-600/5 sm:gap-3 sm:p-6"
                     >
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white">
-                        <action.icon size={24} weight="duotone" />
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blood-100 text-blood-600 transition-colors group-hover:bg-blood-600 group-hover:text-white sm:h-12 sm:w-12">
+                        <action.icon size={20} weight="duotone" className="sm:size-6" />
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-ink-950">{action.label}</p>
-                        <p className="mt-1 text-xs text-ink-500">{action.description}</p>
+                        <p className="text-xs font-semibold text-ink-950 sm:text-sm">{action.label}</p>
+                        <p className="mt-0.5 hidden text-xs text-ink-500 sm:block">{action.description}</p>
                       </div>
                     </Link>
                   ))}
@@ -203,17 +206,17 @@ export default function DonorDashboardPage() {
               </div>
 
               {/* Activity & History */}
-              <div className="grid gap-6 lg:grid-cols-5">
+              <div className="flex flex-col gap-6 lg:grid lg:grid-cols-5">
                 {/* Activity Feed */}
                 <div className="lg:col-span-2 rounded-3xl border border-ink-900/10 bg-bone-50">
-                  <div className="border-b border-ink-900/10 px-6 py-4 text-center">
-                    <h2 className="font-display text-lg font-semibold text-ink-950">
+                  <div className="border-b border-ink-900/10 px-5 py-3 text-center sm:px-6 sm:py-4">
+                    <h2 className="font-display text-base font-semibold text-ink-950 sm:text-lg">
                       Recent Activity
                     </h2>
                   </div>
                   <div className="divide-y divide-ink-900/5">
                     {notifications.length === 0 && (
-                      <p className="px-6 py-8 text-sm text-ink-400 text-center">
+                      <p className="px-5 py-6 text-sm text-ink-400 text-center sm:px-6 sm:py-8">
                         No notifications yet
                       </p>
                     )}
@@ -223,19 +226,19 @@ export default function DonorDashboardPage() {
                       return (
                         <div
                           key={item.id}
-                          className={`flex items-start gap-4 px-6 py-4 transition-colors hover:bg-ink-900/5 ${!item.is_read ? "bg-blood-50/30" : ""}`}
+                          className={`flex items-start gap-3 px-5 py-3 transition-colors hover:bg-ink-900/5 sm:gap-4 sm:px-6 sm:py-4 ${!item.is_read ? "bg-blood-50/30" : ""}`}
                         >
                           <span
-                            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${cfg.color}`}
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold sm:h-8 sm:w-8 sm:text-xs ${cfg.color}`}
                           >
                             {cfg.icon}
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold text-ink-900">{item.title}</p>
-                            <p className="mt-0.5 text-sm text-ink-500 line-clamp-2">
+                            <p className="mt-0.5 text-xs text-ink-500 line-clamp-2 sm:text-sm">
                               {item.message}
                             </p>
-                            <span className="mt-1.5 inline-block text-xs text-ink-400">
+                            <span className="mt-1 inline-block text-[11px] text-ink-400 sm:text-xs">
                               {timeAgo}
                             </span>
                           </div>
@@ -250,33 +253,33 @@ export default function DonorDashboardPage() {
 
                 {/* Donation History */}
                 <div className="lg:col-span-3 rounded-3xl border border-ink-900/10 bg-bone-50">
-                  <div className="flex items-center justify-center border-b border-ink-900/10 px-6 py-4">
-                    <h2 className="font-display text-lg font-semibold text-ink-950">
+                  <div className="flex items-center justify-center border-b border-ink-900/10 px-5 py-3 sm:px-6 sm:py-4">
+                    <h2 className="font-display text-base font-semibold text-ink-950 sm:text-lg">
                       Donation History
                     </h2>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead>
-                        <tr className="border-b border-ink-900/10 text-xs font-semibold uppercase tracking-wider text-ink-400">
-                          <th className="px-6 py-3">Date</th>
-                          <th className="px-6 py-3">Hospital</th>
-                          <th className="px-6 py-3">Units</th>
-                          <th className="px-6 py-3">Status</th>
+                        <tr className="border-b border-ink-900/10 text-[10px] font-semibold uppercase tracking-wider text-ink-400 sm:text-xs">
+                          <th className="px-4 py-2.5 sm:px-6 sm:py-3">Date</th>
+                          <th className="px-4 py-2.5 sm:px-6 sm:py-3">Hospital</th>
+                          <th className="px-4 py-2.5 sm:px-6 sm:py-3">Units</th>
+                          <th className="px-4 py-2.5 sm:px-6 sm:py-3">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-ink-900/5">
                         {MOCK_HISTORY.map((item) => (
                           <tr key={item.id} className="transition-colors hover:bg-ink-900/5">
-                            <td className="px-6 py-4 text-ink-700">
+                            <td className="px-4 py-3 text-xs text-ink-700 sm:px-6 sm:py-4 sm:text-sm">
                               {new Date(item.date).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 font-medium text-ink-900">
+                            <td className="px-4 py-3 text-xs font-medium text-ink-900 sm:px-6 sm:py-4 sm:text-sm">
                               {item.hospital}
                             </td>
-                            <td className="px-6 py-4 text-ink-700">{item.units}</td>
-                            <td className="px-6 py-4">
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                            <td className="px-4 py-3 text-xs text-ink-700 sm:px-6 sm:py-4 sm:text-sm">{item.units}</td>
+                            <td className="px-4 py-3 sm:px-6 sm:py-4">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-xs">
                                 <span className="h-1 w-1 rounded-full bg-emerald-500" />
                                 {item.status}
                               </span>

@@ -94,36 +94,36 @@ export function Hero() {
 
         <motion.ul
           variants={reduce ? undefined : fadeUp}
-          className="mt-12 flex flex-wrap items-center justify-center gap-4"
+          className="mt-10 grid grid-cols-1 gap-3 sm:mt-12 sm:flex sm:items-center sm:justify-center sm:gap-4"
         >
-          <li className="flex items-center gap-2.5 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blood-500/25 text-blood-400">
+          <li className="flex items-center gap-3 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blood-500/25 text-blood-400 sm:h-8 sm:w-8">
               <DropMark />
             </span>
             <span className="text-left">
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-bone-50">
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-bone-50 sm:text-sm">
                 O+ match found
-                <CheckCircle size={15} weight="fill" className="text-emerald-400" />
+                <CheckCircle size={15} weight="fill" className="text-emerald-400 sm:text-[15px]" />
               </span>
-              <span className="block text-xs text-bone-200/80">2.3 km away · available now</span>
+              <span className="block text-xs text-bone-200/80 sm:text-xs">2.3 km away · available now</span>
             </span>
           </li>
-          <li className="flex items-center gap-2.5 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blood-500/25 text-blood-400">
-              <UsersThree size={18} weight="fill" />
+          <li className="flex items-center gap-3 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blood-500/25 text-blood-400 sm:h-8 sm:w-8">
+              <UsersThree size={17} weight="fill" />
             </span>
             <span className="text-left">
-              <span className="block text-sm font-semibold text-bone-50">48,200+ verified donors</span>
-              <span className="block text-xs text-bone-200/80">ready on the network</span>
+              <span className="block text-sm font-semibold text-bone-50 sm:text-sm">48,200+ verified donors</span>
+              <span className="block text-xs text-bone-200/80 sm:text-xs">ready on the network</span>
             </span>
           </li>
-          <li className="flex items-center gap-2.5 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blood-500/25 text-blood-400">
-              <Timer size={18} weight="fill" />
+          <li className="flex items-center gap-3 rounded-2xl border border-bone-50/15 bg-bone-50/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blood-500/25 text-blood-400 sm:h-8 sm:w-8">
+              <Timer size={17} weight="fill" />
             </span>
             <span className="text-left">
-              <span className="block text-sm font-semibold text-bone-50">&lt; 5 min to first match</span>
-              <span className="block text-xs text-bone-200/80">median response time</span>
+              <span className="block text-sm font-semibold text-bone-50 sm:text-sm">&lt; 5 min to first match</span>
+              <span className="block text-xs text-bone-200/80 sm:text-xs">median response time</span>
             </span>
           </li>
         </motion.ul>

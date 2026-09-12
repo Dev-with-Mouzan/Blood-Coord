@@ -1,7 +1,7 @@
 import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { DonorNavbar } from "@/components/ui/donor-navbar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, MapPin, Shield, SignOut, Pencil, Check, X, Drop, Heart, Calendar } from "@phosphor-icons/react";
 import { getToken } from "@/lib/auth-client";
@@ -11,6 +11,7 @@ export default function DonorProfilePage() {
   const { user, refresh, logout } = useAuth();
   const navigate = useNavigate();
   const donor = user && "blood_group" in user ? (user as DonorProfile) : null;
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -54,30 +55,45 @@ export default function DonorProfilePage() {
     setSaved(false);
     const token = getToken("donor");
     if (token) {
-      await fetch("/api/v1/donors/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ available_to_donate: newValue }),
-      });
-      await refresh();
+      try {
+        const res = await fetch("/api/v1/donors/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ available_to_donate: newValue }),
+        });
+        if (!res.ok) {
+          setFormData((prev) => ({ ...prev, available_to_donate: !newValue }));
+        }
+        await refresh();
+      } catch {
+        setFormData((prev) => ({ ...prev, available_to_donate: !newValue }));
+      }
     }
   }
 
   async function handleSave() {
     setSaving(true);
+    setSaved(false);
     const token = getToken("donor");
     if (token) {
-      await fetch("/api/v1/donors/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(formData),
-      });
-      await refresh();
+      try {
+        const res = await fetch("/api/v1/donors/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          await refresh();
+          setSaved(true);
+          setEditing(false);
+          if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current);
+          savedTimeoutRef.current = setTimeout(() => setSaved(false), 3000);
+        }
+      } catch {
+        // error handled silently
+      }
     }
     setSaving(false);
-    setSaved(true);
-    setEditing(false);
-    setTimeout(() => setSaved(false), 3000);
   }
 
   function handleCancel() {

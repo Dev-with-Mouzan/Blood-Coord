@@ -1,9 +1,9 @@
 # Chat/message model, linked by public_id (no phone exposed)
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import String as GenericString
 from sqlalchemy.orm import relationship
@@ -30,7 +30,7 @@ class ChatThread(Base):
     requester_id = Column(Integer, ForeignKey("requesters.id"), nullable=False)
     blood_request_id = Column(Integer, ForeignKey("blood_requests.id"), nullable=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     messages = relationship("Message", back_populates="thread", order_by="Message.created_at")
 
@@ -39,10 +39,11 @@ class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    thread_id = Column(Integer, ForeignKey("chat_threads.id"), nullable=False)
+    thread_id = Column(Integer, ForeignKey("chat_threads.id"), nullable=False, index=True)
 
     sender_role = Column(String, nullable=False)  # "donor" or "requester"
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    is_read = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     thread = relationship("ChatThread", back_populates="messages")

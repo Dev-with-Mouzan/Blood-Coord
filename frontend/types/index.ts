@@ -93,3 +93,21 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
 }
+
+export type DonorRequestStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+
+export interface DonorRequest {
+  id: number;
+  public_id: string;
+  blood_request_public_id: string;
+  requester_public_id: string;
+  donor_public_id: string;
+  blood_type: string;
+  hospital: string;
+  address: string;
+  units_needed: number;
+  urgency: string;
+  status: DonorRequestStatus;
+  requester_name: string;
+  created_at: string;
+}

@@ -4,7 +4,7 @@ import { AuthGate } from "@/components/auth/auth-gate";
 import { RequesterNavbar } from "@/components/ui/requester-navbar";
 import { CreateRequestModal } from "@/components/ui/create-request-modal";
 import { requestsApi } from "@/lib/requests";
-import type { BloodRequest, RequesterProfile } from "@/types";
+import type { BloodRequest, DonorRequest, RequesterProfile } from "@/types";
 import { Plus } from "@phosphor-icons/react";
 
 const urgencyStyles: Record<string, string> = {
@@ -18,6 +18,12 @@ const statusStyles: Record<string, string> = {
   MATCHING: "bg-amber-100 text-amber-700",
   FULFILLED: "bg-emerald-100 text-emerald-700",
   CLOSED: "bg-ink-100 text-ink-500",
+};
+
+const connectionStatusStyles: Record<string, string> = {
+  PENDING: "bg-blue-100 text-blue-700",
+  ACCEPTED: "bg-emerald-100 text-emerald-700",
+  REJECTED: "bg-red-100 text-red-700",
 };
 
 export default function RequesterRequestsPage() {
@@ -52,6 +58,7 @@ export default function RequesterRequestsPage() {
               </div>
 
               <RequesterRequestsList key={refreshKey} />
+              <ConnectionStatusList key={refreshKey} />
             </div>
           )}
         </main>
@@ -90,6 +97,9 @@ function RequesterRequestsList() {
 
   return (
     <div className="rounded-3xl border border-ink-900/10 bg-bone-50">
+      <div className="border-b border-ink-900/10 px-6 py-4">
+        <h2 className="font-display text-lg font-semibold text-ink-950">Blood Requests</h2>
+      </div>
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -137,6 +147,81 @@ function RequesterRequestsList() {
                   </td>
                   <td className="px-6 py-4 text-ink-500">
                     {new Date(req.created_at).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConnectionStatusList() {
+  const [connections, setConnections] = useState<DonorRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      setConnections(await requestsApi.listConnections());
+    } catch {
+      setConnections([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <div className="rounded-3xl border border-ink-900/10 bg-bone-50">
+      <div className="border-b border-ink-900/10 px-6 py-4">
+        <h2 className="font-display text-lg font-semibold text-ink-950">Request Status</h2>
+      </div>
+      <div className="overflow-x-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-900/15 border-t-blood-600" />
+          </div>
+        ) : connections.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <p className="text-sm text-ink-500">
+              No donor requests yet. Send a request to a donor from Search.
+            </p>
+          </div>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-ink-900/10 text-xs font-semibold uppercase tracking-wider text-ink-400">
+                <th className="px-6 py-3">Donor</th>
+                <th className="px-6 py-3">Blood Type</th>
+                <th className="px-6 py-3">Hospital</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Sent</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-900/5">
+              {connections.map((conn) => (
+                <tr key={conn.public_id} className="hover:bg-ink-900/5">
+                  <td className="px-6 py-4 font-medium text-ink-900">
+                    Donor
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="rounded-full bg-blood-100 px-2.5 py-1 text-xs font-semibold text-blood-700">
+                      {conn.blood_type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-ink-700">{conn.hospital}</td>
+                  <td className="px-6 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${connectionStatusStyles[conn.status] || ""}`}>
+                      {conn.status === "ACCEPTED" ? "Accepted" : conn.status === "REJECTED" ? "Rejected" : "Pending"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-ink-500">
+                    {new Date(conn.created_at).toLocaleDateString()}
                   </td>
                 </tr>
               ))}

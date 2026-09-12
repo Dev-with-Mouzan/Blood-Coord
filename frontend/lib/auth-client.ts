@@ -89,6 +89,88 @@ export const authApi = {
   async getRequesterMe(token?: string | null): Promise<RequesterProfile> {
     return windowFetchAuth<RequesterProfile>("/api/v1/requesters/me", undefined, token ?? getToken("requester"), "GET");
   },
+
+  async forgotPasswordDonor(phoneNumber: string): Promise<string> {
+    const res = await window.fetch("/api/v1/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber }),
+      credentials: "include",
+    });
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
+
+  async verifyResetCodeDonor(phoneNumber: string, code: string): Promise<string> {
+    const res = await window.fetch("/api/v1/auth/verify-reset-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber, code }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json() as { detail?: string };
+      throw new Error(err.detail || "Invalid or expired code.");
+    }
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
+
+  async resetPasswordDonor(phoneNumber: string, code: string, newPassword: string): Promise<string> {
+    const res = await window.fetch("/api/v1/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber, code, new_password: newPassword }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json() as { detail?: string };
+      throw new Error(err.detail || "Failed to reset password.");
+    }
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
+
+  async forgotPasswordRequester(phoneNumber: string): Promise<string> {
+    const res = await window.fetch("/api/v1/requester-auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber }),
+      credentials: "include",
+    });
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
+
+  async verifyResetCodeRequester(phoneNumber: string, code: string): Promise<string> {
+    const res = await window.fetch("/api/v1/requester-auth/verify-reset-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber, code }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json() as { detail?: string };
+      throw new Error(err.detail || "Invalid or expired code.");
+    }
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
+
+  async resetPasswordRequester(phoneNumber: string, code: string, newPassword: string): Promise<string> {
+    const res = await window.fetch("/api/v1/requester-auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phoneNumber, code, new_password: newPassword }),
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json() as { detail?: string };
+      throw new Error(err.detail || "Failed to reset password.");
+    }
+    const data = await res.json() as { message: string };
+    return data.message;
+  },
 };
 
 function asJson<T>(res: Response): Promise<T> {

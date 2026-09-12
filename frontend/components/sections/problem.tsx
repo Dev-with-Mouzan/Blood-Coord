@@ -4,7 +4,7 @@ import {
   Hourglass,
   PhoneCall,
   Question,
-} from "@phosphor-icons/react/ssr";
+} from "@phosphor-icons/react";
 
 const problems = [
   {
@@ -32,17 +32,17 @@ const problems = [
 export function Problem() {
   return (
     <section id="problem" className="bg-bone-50">
-      <div className="container-shell py-24 md:py-32">
-        <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
+      <div className="container-shell py-16 md:py-32">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
           <Reveal className="lg:col-span-5">
             <div className="lg:sticky lg:top-24">
               <span className="inline-flex items-center gap-2 rounded-full border border-blood-200 bg-blood-50 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-blood-700">
                 The problem
               </span>
-              <h2 className="mt-5 text-balance font-display text-3xl leading-[1.08] tracking-tight text-ink-950 sm:text-4xl md:text-5xl">
+              <h2 className="mt-4 text-balance font-display text-2xl leading-[1.1] tracking-tight text-ink-950 sm:text-3xl md:text-5xl lg:mt-5">
                 When the blood supply runs dry, the system falls apart.
               </h2>
-              <p className="mt-6 max-w-[44ch] text-pretty text-lg leading-relaxed text-ink-600">
+              <p className="mt-4 max-w-[44ch] text-pretty text-base leading-relaxed text-ink-600 md:mt-6 md:text-lg">
                 The people who want to give, and the people who desperately need
                 it, are separated by three broken links: awareness, verification,
                 and trust.
@@ -51,17 +51,35 @@ export function Problem() {
           </Reveal>
 
           <div className="lg:col-span-7">
-            <ol>
+            <ol className="flex flex-col gap-3 sm:gap-0">
               {problems.map((p, i) => (
                 <Reveal key={p.title} delay={i * 0.05}>
-                  <li className="group relative overflow-hidden border-t border-ink-900/10 py-8 transition-colors hover:bg-bone-100/70 md:py-10">
+                  {/* Mobile card */}
+                  <li className="group relative overflow-hidden rounded-2xl border border-ink-900/8 bg-bone-50 py-5 sm:hidden">
+                    <div className="flex items-center gap-3 px-5">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink-950 text-blood-400 text-xs font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                        {i + 1}
+                      </span>
+                      <div>
+                        <h3 className="font-display text-base font-semibold tracking-tight text-ink-950">
+                          {p.title}
+                        </h3>
+                        <p className="mt-1 max-w-[56ch] text-pretty text-sm leading-relaxed text-ink-600">
+                          {p.body}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+
+                  {/* Desktop row */}
+                  <li className="group relative hidden overflow-hidden border-t border-ink-900/10 py-8 transition-colors hover:bg-bone-100/70 sm:block md:py-10">
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute -top-5 right-2 select-none font-display text-[7rem] font-semibold leading-none tracking-tight text-ink-950/[0.05] transition-colors group-hover:text-blood-600/10 md:-top-7"
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <div className="relative flex flex-col gap-4 md:flex-row md:gap-8">
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:gap-8">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-950 text-blood-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                         <p.icon size={24} weight="duotone" />
                       </span>

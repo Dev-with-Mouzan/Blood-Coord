@@ -8,48 +8,6 @@ interface BloodRequestsTableProps {
   bloodGroup: string;
 }
 
-const MOCK_REQUESTS: BloodRequest[] = [
-  {
-    public_id: "req-001",
-    requester_public_id: "user-001",
-    blood_type: "O+",
-    address: "789 Emergency Lane",
-    hospital: "City General Hospital",
-    units_needed: 2,
-    urgency: "CRITICAL",
-    patient_context: "Surgery scheduled for tomorrow morning",
-    status: "PENDING",
-    created_at: "2026-09-08T14:30:00Z",
-    updated_at: "2026-09-08T14:30:00Z",
-  },
-  {
-    public_id: "req-002",
-    requester_public_id: "user-002",
-    blood_type: "O+",
-    address: "321 Care Boulevard",
-    hospital: "St. Mary Medical Center",
-    units_needed: 1,
-    urgency: "URGENT",
-    patient_context: null,
-    status: "MATCHING",
-    created_at: "2026-09-07T09:15:00Z",
-    updated_at: "2026-09-07T16:45:00Z",
-  },
-  {
-    public_id: "req-003",
-    requester_public_id: "user-003",
-    blood_type: "O+",
-    address: "555 Wellness Drive",
-    hospital: "Downtown Clinic",
-    units_needed: 3,
-    urgency: "NORMAL",
-    patient_context: "Scheduled procedure next week",
-    status: "PENDING",
-    created_at: "2026-09-06T11:00:00Z",
-    updated_at: "2026-09-06T11:00:00Z",
-  },
-];
-
 const urgencyStyles: Record<string, string> = {
   CRITICAL: "bg-red-100 text-red-700",
   URGENT: "bg-amber-100 text-amber-700",
@@ -78,7 +36,7 @@ export function BloodRequestsTable({ bloodGroup }: BloodRequestsTableProps) {
         );
         setRequests(matching);
       } catch {
-        setRequests(MOCK_REQUESTS);
+        setRequests([]);
       } finally {
         setLoading(false);
       }

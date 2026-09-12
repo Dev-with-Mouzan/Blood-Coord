@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { authApi } from "@/lib/auth-client";
 import { Button, Field, PasswordInput, TextInput } from "@/components/ui/form";
 import { PhoneInput, toFullPhone } from "@/components/ui/phone-input";

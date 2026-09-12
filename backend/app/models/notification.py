@@ -15,9 +15,9 @@ class Notification(Base):
     title = Column(String(200), nullable=False)
     message = Column(Text, nullable=False)
     type = Column(String(50), nullable=False, default="request")
-    blood_request_id = Column(Integer, ForeignKey("blood_requests.id"), nullable=True)
+    blood_request_id = Column(Integer, ForeignKey("blood_requests.id"), nullable=True, index=True)
     is_read = Column(Boolean, default=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     donor = relationship("Donor", backref="notifications")
     requester = relationship("Requester", backref="notifications")

@@ -9,7 +9,7 @@ import {
 import { useAuth } from "@/components/auth/auth-context";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { api } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getToken } from "@/lib/auth-client";
 
 interface Message {
   sender_role: string;
@@ -25,19 +25,20 @@ export default function ChatPage() {
   const params = useParams();
   const navigate = useNavigate();
   const { role } = useAuth();
-  const chatId = params.chatId as string;
+  const chatId = params.chatId as string | undefined;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const token = getToken(role ?? "donor");
-    if (!token) {
+    if (!token || !chatId) {
       navigate("/login");
       return;
     }
@@ -101,7 +102,7 @@ export default function ChatPage() {
         inputRef.current?.focus();
       }
     } catch (err) {
-      console.error("Failed to send message:", err);
+      setError("Failed to send message. Please try again.");
     } finally {
       setSending(false);
     }
@@ -150,7 +151,7 @@ export default function ChatPage() {
                   Blood Request Chat
                 </h1>
                 <p className="text-xs text-bone-200/60">
-                  Request #{chatId.slice(0, 8)}…
+                  Request #{chatId?.slice(0, 8) ?? "—"}…
                 </p>
               </div>
             </div>
@@ -164,6 +165,17 @@ export default function ChatPage() {
             <div className="flex flex-1 flex-col rounded-3xl border border-ink-900/10 bg-bone-50/80 shadow-xl backdrop-blur-sm">
               {/* Messages area */}
               <div className="flex-1 overflow-auto rounded-t-3xl p-4 md:p-6">
+                {error && (
+                  <div className="mb-4 rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                    {error}
+                    <button
+                      onClick={() => setError(null)}
+                      className="ml-2 font-medium underline"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
                 {loading ? (
                   <div className="flex h-64 items-center justify-center">
                     <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink-900/15 border-t-blood-600" />

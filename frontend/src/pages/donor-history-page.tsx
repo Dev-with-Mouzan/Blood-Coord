@@ -41,40 +41,40 @@ export default function DonorHistoryPage() {
 
         <main className="container-shell pt-24 pb-8 md:pt-28 md:pb-12">
           {donor && (
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 sm:gap-8">
               <div className="text-center">
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-ink-950 md:text-4xl">
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl md:text-4xl">
                   Donation History
                 </h1>
-                <p className="mt-2 text-ink-500">
+                <p className="mt-1 text-sm text-ink-500 sm:mt-2 sm:text-base">
                   Track your past donations and their impact.
                 </p>
               </div>
 
               {/* Summary Stats */}
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-3 sm:p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 sm:text-xs">
                     Total Donations
                   </p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">3</p>
+                  <p className="mt-1 font-display text-xl font-semibold text-ink-950 sm:text-2xl">3</p>
                 </div>
-                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">
+                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-3 sm:p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 sm:text-xs">
                     Lives Impacted
                   </p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">3</p>
+                  <p className="mt-1 font-display text-xl font-semibold text-ink-950 sm:text-2xl">3</p>
                 </div>
-                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">
+                <div className="rounded-2xl border border-ink-900/10 bg-bone-50 p-3 sm:p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 sm:text-xs">
                     Total Units
                   </p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">4</p>
+                  <p className="mt-1 font-display text-xl font-semibold text-ink-950 sm:text-2xl">4</p>
                 </div>
               </div>
 
-              {/* History Table */}
-              <div className="rounded-3xl border border-ink-900/10 bg-bone-50">
+              {/* History — Desktop Table */}
+              <div className="hidden rounded-3xl border border-ink-900/10 bg-bone-50 sm:block">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead>
@@ -107,6 +107,28 @@ export default function DonorHistoryPage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* History — Mobile Cards */}
+              <div className="flex flex-col gap-3 sm:hidden">
+                {MOCK_HISTORY.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-ink-900/10 bg-bone-50 p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-ink-900">{item.hospital}</p>
+                        <p className="mt-0.5 text-xs text-ink-500">{item.recipient}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                        {item.status}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-4 text-xs text-ink-500">
+                      <span>{new Date(item.date).toLocaleDateString()}</span>
+                      <span className="h-1 w-1 rounded-full bg-ink-300" />
+                      <span>{item.units} unit{item.units > 1 ? "s" : ""}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

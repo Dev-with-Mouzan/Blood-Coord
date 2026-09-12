@@ -1,6 +1,5 @@
 import { Suspense, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { authApi } from "@/lib/auth-client";
 import { useAuth } from "@/components/auth/auth-context";
 import { Button, Field, PasswordInput, TextInput } from "@/components/ui/form";
@@ -102,6 +101,13 @@ function LoginFormInner() {
           Sign in
         </Button>
       </form>
+
+      <Link
+        to={`/forgot-password?role=${role}`}
+        className="text-center text-sm font-semibold text-blood-600 hover:underline"
+      >
+        Forgot password?
+      </Link>
 
       <p className="text-center text-sm text-ink-600">
         New here?{" "}

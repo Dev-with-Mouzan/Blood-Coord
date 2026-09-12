@@ -1,6 +1,7 @@
 # donor CRUD/profile
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from app.dependencies import get_current_donor
 from app.models.donor import Donor
@@ -16,6 +17,16 @@ from app.schemas.blood_request import BloodRequestOut  # reuse existing schema
 router = APIRouter(prefix="/donors", tags=["donors"])
 
 
+class DonorUpdate(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=100)
+    age: int | None = Field(None, ge=16, le=100)
+    gender: str | None = Field(None, pattern="^(male|female|other)$")
+    address: str | None = Field(None, min_length=3, max_length=500)
+    weight: float | None = Field(None, ge=30, le=300)
+    health_status: str | None = Field(None, max_length=200)
+    available_to_donate: bool | None = None
+
+
 @router.get("/me", response_model=DonorOut)
 def read_my_profile(current_donor: Donor = Depends(get_current_donor)):
     return current_donor
@@ -23,17 +34,13 @@ def read_my_profile(current_donor: Donor = Depends(get_current_donor)):
 
 @router.patch("/me", response_model=DonorOut)
 def update_my_profile(
-    payload: dict,
+    payload: DonorUpdate,
     current_donor: Donor = Depends(get_current_donor),
     db: Session = Depends(get_db),
 ):
-    allowed_fields = {
-        "name", "age", "gender", "address", "weight",
-        "health_status", "available_to_donate",
-    }
-    for key, value in payload.items():
-        if key in allowed_fields:
-            setattr(current_donor, key, value)
+    update_data = payload.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(current_donor, key, value)
     db.commit()
     db.refresh(current_donor)
     return current_donor

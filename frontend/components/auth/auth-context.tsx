@@ -13,26 +13,6 @@ type Role = "donor" | "requester";
 
 type User = DonorProfile | RequesterProfile;
 
-const MOCK_DONOR: DonorProfile = {
-  public_id: "donor-001",
-  name: "Sarah Mitchell",
-  age: 29,
-  gender: "female",
-  blood_group: "O+",
-  address: "123 Health Avenue, Downtown Medical District",
-  weight: 62,
-  health_status: "Excellent — no conditions",
-  last_donation_date: "2025-11-15",
-  available_to_donate: true,
-  eligible_status: true,
-};
-
-const MOCK_REQUESTER: RequesterProfile = {
-  public_id: "req-001",
-  name: "James Cooper",
-  address: "456 Memorial Drive, Central Hospital Area",
-};
-
 interface AuthContextValue {
   role: Role | null;
   user: User | null;
@@ -69,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setRole(currentRole);
     } catch {
+      setUser(null);
       setRole(currentRole);
     } finally {
       setLoading(false);
@@ -82,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback((newRole: Role, token: string) => {
     setToken(newRole, token);
     setRole(newRole);
+    setLoading(true);
     void (async () => {
       try {
         if (newRole === "donor") {
@@ -91,6 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);

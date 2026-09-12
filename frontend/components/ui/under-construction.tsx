@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "@phosphor-icons/react/ssr";
+import { ArrowLeft } from "@phosphor-icons/react";
 
 export function UnderConstruction({
   title,
